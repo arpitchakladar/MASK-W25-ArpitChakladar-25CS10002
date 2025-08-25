@@ -1,0 +1,79 @@
+[
+	{
+		"id": 1692964001,
+		"name": "Naruto",
+		"episodes": 220,
+		"synopsis": "Naruto Uzumaki, a young ninja, seeks recognition and dreams of becoming Hokage while facing powerful enemies and uncovering secrets of his past.",
+		"rating": 8.3
+	},
+	{
+		"id": 1692964002,
+		"name": "Fullmetal Alchemist: Brotherhood",
+		"episodes": 64,
+		"synopsis": "Two brothers, Edward and Alphonse Elric, use alchemy to try to resurrect their mother, suffering grave consequences, and then seek the Philosopher's Stone to restore their bodies.",
+		"rating": 9.1
+	},
+	{
+		"id": 1692964003,
+		"name": "Attack on Titan",
+		"episodes": 75,
+		"synopsis": "Humanity fights for survival against giant humanoid Titans that devour humans, while uncovering dark secrets about their world.",
+		"rating": 9
+	},
+	{
+		"id": 1692964004,
+		"name": "Death Note",
+		"episodes": 37,
+		"synopsis": "A high school student gains a notebook that allows him to kill anyone whose name he writes in it, leading to a high-stakes battle of wits with a genius detective.",
+		"rating": 8.7
+	},
+	{
+		"id": 1692964005,
+		"name": "My Hero Academia",
+		"episodes": 113,
+		"synopsis": "In a world where nearly everyone has superpowers called Quirks, Izuku Midoriya dreams of becoming a hero despite being born Quirkless.",
+		"rating": 8.4
+	},
+	{
+		"id": 1692964006,
+		"name": "One Piece",
+		"episodes": 1050,
+		"synopsis": "Monkey D. Luffy and his crew of pirates explore the Grand Line to find the ultimate treasure, the One Piece, and become the Pirate King.",
+		"rating": 9
+	},
+	{
+		"id": 1692964007,
+		"name": "Demon Slayer: Kimetsu no Yaiba",
+		"episodes": 26,
+		"synopsis": "Tanjiro Kamado becomes a demon slayer after his family is slaughtered by demons, seeking a cure for his sister Nezuko who was turned into a demon.",
+		"rating": 8.8
+	},
+	{
+		"id": 1692964008,
+		"name": "Tokyo Revengers",
+		"episodes": 24,
+		"synopsis": "Takemichi Hanagaki travels back in time to his middle school days to save his ex-girlfriend from a tragic fate and change the future of a gang.",
+		"rating": 8.1
+	},
+	{
+		"id": 1692964009,
+		"name": "Jujutsu Kaisen",
+		"episodes": 24,
+		"synopsis": "Yuji Itadori joins a secret organization to fight Curses after swallowing a powerful cursed object, facing dangerous opponents and uncovering dark mysteries.",
+		"rating": 8.7
+	},
+	{
+		"id": 1692964010,
+		"name": "Hunter x Hunter",
+		"episodes": 148,
+		"synopsis": "Gon Freecss becomes a Hunter to find his missing father, encountering dangerous challenges, friends, and deadly foes along the way.",
+		"rating": 9
+	},
+	{
+		"name": "Vinland Saga",
+		"episodes": 24,
+		"synopsis": "Thorfinn seeks revenge against the mercenary leader who killed his father while being drawn into the violent world of Vikings, war, and honor.",
+		"rating": 8.8,
+		"id": 1756151806145
+	}
+]

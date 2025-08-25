@@ -1,0 +1,11 @@
+{
+	"name": "b01-bam",
+	"version": "1.0.0",
+	"description": "Very simple auth implementation.",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Arpit Chakladar",
+	"license": "MIT"
+}

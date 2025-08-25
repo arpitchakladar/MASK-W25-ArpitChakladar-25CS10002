@@ -1,0 +1,14 @@
+{
+	"name": "b01-rap",
+	"version": "1.0.0",
+	"description": "Very simple express api server.",
+	"main": "src/index.js",
+	"scripts": {
+		"start": "node src/index.js"
+	},
+	"author": "Arpit Chakladar",
+	"license": "MIT",
+	"dependencies": {
+		"express": "^5.1.0"
+	}
+}
