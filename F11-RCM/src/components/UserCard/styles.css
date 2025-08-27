@@ -1,0 +1,28 @@
+.UserCard {
+	color: var(--background);
+	text-align: center;
+}
+
+.UserCard > div {
+	background: var(--accent);
+	width: 300px;
+	padding: 4px 4px 16px 4px;
+	border-radius: 5px;
+	box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
+	margin: 0 auto 0 auto;
+}
+
+.UserCard > div > .avatar {
+	width: 100%;
+}
+
+.UserCard > div > .title {
+	margin: 10px 0 10px 0;
+}
+
+.UserCard > div > .icon {
+	margin: 0 auto 0 auto;
+	height: 20px;
+	width: auto;
+	filter: invert(100%);
+}
