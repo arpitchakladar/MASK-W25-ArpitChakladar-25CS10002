@@ -1,0 +1,14 @@
+{
+  "name": "b11-jwt",
+  "version": "1.0.0",
+  "description": "Very simple implementation of JWT authentication.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "author": "Arpit Chakladar",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
