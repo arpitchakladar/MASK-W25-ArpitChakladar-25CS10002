@@ -34,6 +34,7 @@ function App() {
 			<section className="members">
 				{members.map((member) => (
 					<UserCardComponent
+						key={member.avatar + member.title}
 						{...member}
 					/>
 				))}
