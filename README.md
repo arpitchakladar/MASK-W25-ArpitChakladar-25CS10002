@@ -1,8 +1,8 @@
 # MASK IIT KGP Selections – Task Submission
 
-**Name:** Arpit Chakladar
-**Roll Number:** 25CS10002
-**Discord Username:** zyr02
+**Name:** Arpit Chakladar\
+**Roll Number:** 25CS10002\
+**Discord Username:** zyr02\
 **Year:** First Year
 
 ### Task F02-FDI (Figma)
