@@ -71,4 +71,5 @@ app.post("/is-authenticated", (req, res) => {
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
+	console.log(`Goto the page http://localhost:${port}/`);
 });
