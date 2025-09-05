@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import { generateSalt, getHash } from "@/lib/hashing";
+import { generateSalt } from "@/lib/hashing";
 
 const DB_FILE = "db.json";
 
@@ -9,19 +9,36 @@ type User = {
 	password: string;
 };
 
+type OTP = {
+	jwt: string;
+	otp: string;
+	expiration: number;
+};
+
 type Database = {
 	users: User[];
+	otps: OTP[];
+	preOTPSecret: string;
+	secret: string;
 };
 
 async function readDb(): Promise<Database> {
 	try {
 		const content = await fs.readFile(DB_FILE, "utf-8");
-		const database = JSON.parse(content);
+		const database = JSON.parse(content) || {};
 		database.users ||= [];
+		database.otps ||= [];
 		return database;
 	} catch (err: any) {
 		if (err.code === "ENOENT") {
-			return { users: [] }; // file not found → start empty
+			const database = {
+				users: [],
+				otps: [],
+				preOTPSecret: generateSalt(),
+				secret: generateSalt(),
+			}; // file not found → start empty
+			await writeDb(database);
+			return database;
 		}
 		throw err;
 	}
@@ -29,6 +46,16 @@ async function readDb(): Promise<Database> {
 
 async function writeDb(data: Database): Promise<void> {
 	await fs.writeFile(DB_FILE, JSON.stringify(data, null, "\t"), "utf-8");
+}
+
+export async function getPreOTPSecret() {
+	const database = await readDb();
+	return database.preOTPSecret;
+}
+
+export async function getSecret() {
+	const database = await readDb();
+	return database.secret;
 }
 
 export async function getUser(usernameOrEmail: string) {
@@ -51,4 +78,13 @@ export async function createUser(
 		password,
 	});
 	await writeDb(database);
+}
+
+export async function createOTP(jwt: string, expiration: number, otp: string) {
+	const database = await readDb();
+	database.otps.push({
+		otp,
+		expiration,
+		jwt,
+	});
 }
