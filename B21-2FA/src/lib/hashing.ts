@@ -1,10 +1,19 @@
 function simpleHash(str: string): string {
-	let h = 0;
-	for (let i = 0; i < str.length; i++) {
-		h = (h ^ str.charCodeAt(i)) * 16777619;
-		h = h >>> 0;
+	const ROUNDS = 8;
+	let hash = "";
+	let input = str;
+
+	for (let r = 0; r < ROUNDS; r++) {
+		let h = 0;
+		for (let i = 0; i < input.length; i++) {
+			h = (h ^ input.charCodeAt(i)) * 16777619;
+			h = h >>> 0;
+		}
+		hash += h.toString(16).padStart(8, "0");
+		input = hash;
 	}
-	return h.toString(16).padStart(8, "0");
+
+	return hash;
 }
 
 export function getHash(payload: string, salt: string): string {

@@ -16,7 +16,9 @@ type Database = {
 async function readDb(): Promise<Database> {
 	try {
 		const content = await fs.readFile(DB_FILE, "utf-8");
-		return JSON.parse(content);
+		const database = JSON.parse(content);
+		database.users ||= [];
+		return database;
 	} catch (err: any) {
 		if (err.code === "ENOENT") {
 			return { users: [] }; // file not found → start empty
@@ -29,9 +31,12 @@ async function writeDb(data: Database): Promise<void> {
 	await fs.writeFile(DB_FILE, JSON.stringify(data, null, "\t"), "utf-8");
 }
 
-export async function getUser(username: string) {
+export async function getUser(usernameOrEmail: string) {
 	const database = await readDb();
-	return database.users.find((user) => user.username === username);
+	return database.users.find(
+		(user) =>
+			user.username === usernameOrEmail || user.email === usernameOrEmail
+	);
 }
 
 export async function createUser(
@@ -40,17 +45,10 @@ export async function createUser(
 	password: string
 ) {
 	const database = await readDb();
-	if (
-		database.users.find(
-			(user) => user.username === username || user.email === email
-		)
-	)
-		throw new Error("User with the given username or email already exists.");
-	const salt = generateSalt();
 	database.users.push({
 		username,
 		email,
-		password: getHash(password, salt) + "$" + salt,
+		password,
 	});
 	await writeDb(database);
 }
