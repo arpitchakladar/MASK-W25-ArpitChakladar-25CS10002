@@ -10,7 +10,7 @@ type User = {
 };
 
 type OTP = {
-	jwt: string;
+	preOTPToken: string;
 	otp: string;
 	expiration: number;
 };
@@ -80,11 +80,27 @@ export async function createUser(
 	await writeDb(database);
 }
 
-export async function createOTP(jwt: string, expiration: number, otp: string) {
+export async function createOTP(
+	preOTPToken: string,
+	expiration: number,
+	otp: string
+) {
 	const database = await readDb();
-	database.otps.push({
-		otp,
-		expiration,
-		jwt,
-	});
+	const prev = database.otps.find((otp) => otp.preOTPToken === preOTPToken);
+	if (prev) {
+		prev.otp = otp;
+		prev.expiration = expiration;
+	} else {
+		database.otps.push({
+			otp,
+			expiration,
+			preOTPToken,
+		});
+	}
+	await writeDb(database);
+}
+
+export async function getOTP(preOTPToken: string) {
+	const database = await readDb();
+	return database.otps.find((otp) => otp.preOTPToken === preOTPToken);
 }

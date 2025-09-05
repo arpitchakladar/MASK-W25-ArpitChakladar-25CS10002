@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import * as db from "@/lib/db";
 import * as hashing from "@/lib/hashing";
 import * as jwt from "@/lib/jwt";
+import * as otp from "@/lib/otp";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -22,8 +23,11 @@ export async function POST(req: NextRequest) {
 		const cookieStore = await cookies();
 		const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
 		cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
+		const currentOTP = await otp.generateOTP(preOTPToken);
+		console.log(`The OTP is ${currentOTP}`);
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {
+		console.error(err);
 		return Response.json(
 			{ success: false, message: err.message || "Something went wrong" },
 			{ status: 500 }
