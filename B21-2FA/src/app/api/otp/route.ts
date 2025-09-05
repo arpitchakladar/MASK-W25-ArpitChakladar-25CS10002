@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import * as db from "@/lib/db";
-import * as otp from "@/lib/otp";
 import * as jwt from "@/lib/jwt";
 
 export async function POST(req: NextRequest) {
@@ -37,6 +36,9 @@ export async function POST(req: NextRequest) {
 			);
 		}
 		cookieStore.delete("pre-otp");
+		const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
+		const jwtToken = jwt.createJWT(username, await db.getSecret());
+		cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {
 		console.error(err);
