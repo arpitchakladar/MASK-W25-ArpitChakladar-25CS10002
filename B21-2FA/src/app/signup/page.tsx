@@ -3,6 +3,7 @@
 import { useState } from "react";
 import styles from "./signup.module.css";
 import formStyles from "@/styles/form.module.css";
+import { validateSignUp } from "@/lib/validation";
 
 export default function LoginPage() {
 	const [username, setUsername] = useState("");
@@ -12,6 +13,12 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		try {
+			validateSignUp(username, email, password);
+		} catch (err: any) {
+			setMessage(`❌ ${err.message}`);
+			return;
+		}
 
 		try {
 			const res = await fetch("/api/signup", {
@@ -35,6 +42,7 @@ export default function LoginPage() {
 		<div className={styles.signup}>
 			<form
 				onSubmit={handleSubmit}
+				noValidate
 				className={`${styles.signup_form} ${formStyles.form}`}
 			>
 				<h1 className={formStyles.form_heading}>Sign Up</h1>

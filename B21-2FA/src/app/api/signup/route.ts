@@ -9,14 +9,14 @@ export async function POST(req: NextRequest) {
 		const { username, email, password } = await req.json();
 		if ((await getUser(username)) || (await getUser(email)))
 			return Response.json(
-				{ success: false, error: "Username or email already exists." },
+				{ success: false, message: "Username or email already exists." },
 				{ status: 401 }
 			);
 		try {
 			validateSignUp(username, email, password);
 		} catch (err: any) {
 			return Response.json(
-				{ success: false, error: err.message },
+				{ success: false, message: err.message },
 				{ status: 401 }
 			);
 		}
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 		return Response.json({ success: true, message: "Signed Up successfully." });
 	} catch (err: any) {
 		return Response.json(
-			{ success: false, error: err.message || "Something went wrong" },
+			{ success: false, message: err.message || "Something went wrong" },
 			{ status: 500 }
 		);
 	}

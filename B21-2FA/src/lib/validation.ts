@@ -3,8 +3,9 @@ export function validateSignUp(
 	email: string,
 	password: string
 ) {
-	if (username === "" || password === "" || email === "")
-		throw new Error("No username, email or password provided.");
+	if (!username) throw new Error("No username was provided.");
+	if (!email) throw new Error("No email was provided.");
+	if (!password) throw new Error("No password was provided.");
 
 	if (password.length < 8)
 		throw new Error("Password must be at least 8 characters long.");

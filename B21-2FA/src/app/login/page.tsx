@@ -11,6 +11,8 @@ export default function LoginPage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!username || !password)
+			return setMessage("Please enter username and password.");
 
 		try {
 			const res = await fetch("/api/login", {
@@ -36,7 +38,7 @@ export default function LoginPage() {
 				onSubmit={handleSubmit}
 				className={`${styles.login_form} ${formStyles.form}`}
 			>
-				<h1>Log In</h1>
+				<h1 className={formStyles.form_heading}>Log In</h1>
 
 				<input
 					type="text"

@@ -9,19 +9,19 @@ export async function POST(req: NextRequest) {
 		const user = await getUser(username);
 		if (!user)
 			return Response.json(
-				{ success: false, error: "User not found!" },
+				{ success: false, message: "User not found!" },
 				{ status: 404 }
 			);
 		const [passwordHash, salt] = user.password.split("$");
 		if (passwordHash !== getHash(password, salt))
 			return Response.json(
-				{ success: false, error: "Incorrect password!" },
+				{ success: false, message: "Incorrect password!" },
 				{ status: 401 }
 			);
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {
 		return Response.json(
-			{ success: false, error: err.message || "Something went wrong" },
+			{ success: false, message: err.message || "Something went wrong" },
 			{ status: 500 }
 		);
 	}
