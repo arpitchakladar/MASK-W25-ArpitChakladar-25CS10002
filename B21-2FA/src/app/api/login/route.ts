@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
 		const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
 		cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
 		const currentOTP = await otp.generateOTP(preOTPToken);
+		// TODO: Send email
 		console.log(`The OTP is ${currentOTP}`);
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {

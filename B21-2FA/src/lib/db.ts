@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import { generateSalt } from "@/lib/hashing";
+import { setInterval } from "timers/promises";
 
 const DB_FILE = "db.json";
 
@@ -104,3 +105,19 @@ export async function getOTP(preOTPToken: string) {
 	const database = await readDb();
 	return database.otps.find((otp) => otp.preOTPToken === preOTPToken);
 }
+
+export async function removeOTP(preOTPToken: string) {
+	const database = await readDb();
+	database.otps = database.otps.filter(
+		(otp) => otp.preOTPToken !== preOTPToken
+	);
+	await writeDb(database);
+}
+
+// Remove expired OTPs every 30mins
+setInterval(1000 * 60 * 30, async () => {
+	const database = await readDb();
+	const curDate = Date.now();
+	database.otps = database.otps.filter((otp) => otp.expiration > curDate);
+	await writeDb(database);
+});

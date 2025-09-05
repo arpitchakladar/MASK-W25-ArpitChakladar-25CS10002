@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
 		const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
 		const jwtToken = jwt.createJWT(username, await db.getSecret());
 		cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
+		db.removeOTP(preOTPToken);
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {
 		console.error(err);
