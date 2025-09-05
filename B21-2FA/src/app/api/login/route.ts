@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 			);
 		const cookieStore = await cookies();
 		const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
-		cookieStore.set("pre-otp", preOTPToken, { path: "/" });
+		cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
 		return Response.json({ success: true, message: "Logged in successfully." });
 	} catch (err: any) {
 		return Response.json(

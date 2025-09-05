@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 		db.createUser(username, email, passwordHash + "$" + salt);
 		const cookieStore = await cookies();
 		const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
-		cookieStore.set("pre-otp", preOTPToken, { path: "/" });
+		cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
 		return Response.json({ success: true, message: "Signed Up successfully." });
 	} catch (err: any) {
 		return Response.json(
