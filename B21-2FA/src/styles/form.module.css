@@ -1,0 +1,33 @@
+.form {
+	box-shadow: 5px 5px 20px #333;
+	text-align: center;
+	padding: 20px;
+	border-radius: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.form_heading {
+	font-size: 3rem;
+	margin-bottom: 20px;
+}
+
+.form_input,
+.form_button {
+	width: 100%;
+	display: block;
+	padding: 10px 20px 10px 20px;
+	border-radius: 10000px;
+}
+
+.form_input {
+	border: none;
+	outline: none;
+	box-shadow: 1px 1px 5px #333;
+}
+
+.form_button {
+	background: cyan;
+	border: none;
+}
