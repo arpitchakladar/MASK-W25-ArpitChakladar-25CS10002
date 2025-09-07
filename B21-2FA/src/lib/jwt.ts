@@ -13,9 +13,6 @@ export function validateJWT(jwt: string, secret: string) {
 	const [payload, jwtToken] = jwt.split("$");
 	const payloadString = atob(payload);
 	const payloadJSON = JSON.parse(payloadString);
-	console.log(payloadJSON);
-	console.log(jwtToken);
-	console.log(getHash(payloadString, secret));
 	const currentJWTToken = getHash(payloadString, secret);
 	if (payloadJSON.expiration < Date.now() || currentJWTToken !== jwtToken)
 		throw new Error("Invalid jwt token found.");
