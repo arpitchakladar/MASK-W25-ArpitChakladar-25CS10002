@@ -3,7 +3,7 @@ import { useState } from "react";
 import styles from "./otp.module.css";
 import { useRouter } from "next/navigation";
 
-export default function AuthLayout() {
+export default function OTPPage() {
 	const [otp, setOtp] = useState("");
 	const [message, setMessage] = useState("");
 	const router = useRouter();
@@ -25,7 +25,7 @@ export default function AuthLayout() {
 			const data = await res.json();
 			if (res.ok) {
 				setMessage(`✅ ${data.message}`);
-				router.push("/");
+				setTimeout(() => router.push("/"), 1000);
 			} else {
 				setMessage(`❌ ${data.message}`);
 			}
