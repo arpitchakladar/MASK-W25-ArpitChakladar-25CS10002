@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname, useParams } from "next/navigation";
-import styles from "./otp.module.css";
+import { useRouter, useParams } from "next/navigation";
+import styles from "../../auth.module.css";
 import { useMessage } from "@/app/MessageContext";
 
 export default function OTPPage() {
@@ -42,18 +42,22 @@ export default function OTPPage() {
 
 	return (
 		<div className={styles.container}>
-			<form className={styles.content} onSubmit={handleSubmit}>
-				<h1>{type === "signup" ? "Sign Up OTP" : "Login OTP"}</h1>
-				<input
-					placeholder="OTP"
-					type="text"
-					value={otp}
-					inputMode="numeric"
-					pattern="[0-9]*"
-					onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-				/>
-				<button type="submit">Submit</button>
-			</form>
+			<div className={styles.content}>
+				<div className={styles.form}>
+					<form className={styles.content} onSubmit={handleSubmit}>
+						<h1>{type.toUpperCase().replaceAll("_", " ")}</h1>
+						<input
+							placeholder="OTP"
+							type="text"
+							value={otp}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+						/>
+						<button type="submit">Submit</button>
+					</form>
+				</div>
+			</div>
 		</div>
 	);
 }

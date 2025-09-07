@@ -27,20 +27,20 @@ export default function AuthLayout({
 			<div className={styles.content}>
 				<div className={styles.tab_bar}>
 					<Link
-						href="/login"
+						href="/recovery/code"
 						className={`${styles.tab} ${
-							pathname === "/login" ? styles.active_tab : ""
+							pathname === "/recovery/code" ? styles.active_tab : ""
 						}`}
 					>
-						Log In
+						Recovery Codes
 					</Link>
 					<Link
-						href="/signup"
+						href="/recovery/email"
 						className={`${styles.tab} ${
-							pathname === "/signup" ? styles.active_tab : ""
+							pathname === "/recovery/email" ? styles.active_tab : ""
 						}`}
 					>
-						Sign Up
+						Email
 					</Link>
 				</div>
 

@@ -4,24 +4,23 @@ import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 
 export default function LogInPage() {
-	const [username, setUsername] = useState("");
-	const [password, setPassword] = useState("");
+	const [recoveryCode, setRecoveryCode] = useState("");
 	const router = useRouter();
 	const { setMessage } = useMessage();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!username || !password)
+		if (!recoveryCode)
 			return setMessage({
-				text: "Please enter username and password.",
+				text: "Please enter recoveryCode.",
 				type: "error",
 			});
 
 		try {
-			const res = await fetch("/api/login", {
+			const res = await fetch("/api/recovery/Code", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, password }),
+				body: JSON.stringify({ recoveryCode }),
 			});
 
 			const data = await res.json();
@@ -45,21 +44,13 @@ export default function LogInPage() {
 		<form onSubmit={handleSubmit}>
 			<input
 				type="text"
-				placeholder="Username"
-				value={username}
-				onChange={(e) => setUsername(e.target.value)}
+				placeholder="Recovery Code"
+				value={recoveryCode}
+				onChange={(e) => setRecoveryCode(e.target.value)}
 				required
 			/>
 
-			<input
-				type="password"
-				placeholder="Password"
-				value={password}
-				onChange={(e) => setPassword(e.target.value)}
-				required
-			/>
-
-			<button type="submit">Log In</button>
+			<button type="submit">Use Recovery Code</button>
 		</form>
 	);
 }
