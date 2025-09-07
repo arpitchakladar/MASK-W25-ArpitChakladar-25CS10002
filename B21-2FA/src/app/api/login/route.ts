@@ -11,7 +11,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Query database for users
 	const user = await db.getUser(username);
-	if (!user)
+	if (!user || !user.validated)
 		return apiResponse("Your account was not found. Try creating one.", 404);
 
 	// Validate password
