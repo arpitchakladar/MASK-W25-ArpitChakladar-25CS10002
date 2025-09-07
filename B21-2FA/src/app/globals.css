@@ -1,12 +1,68 @@
 :root {
-	--background: #fcfcfc;
-	--foreground: #001a23;
+	/* Light theme */
+	--background: #f9fafb; /* subtle off-white */
+	--background-rgb: 249, 250, 251;
+
+	--foreground: #111827; /* deep gray/blue text */
+	--foreground-rgb: 17, 24, 39;
+
+	--accent: #2563eb; /* modern blue */
+	--accent-rgb: 37, 99, 235;
+
+	--accent-foreground: #ffffff;
+	--accent-foreground-rgb: 255, 255, 255;
+
+	--muted: #e5e7eb; /* soft gray for borders/bg */
+	--muted-rgb: 229, 231, 235;
+
+	--muted-foreground: #374151;
+	--muted-foreground-rgb: 55, 65, 81;
+
+	--border: #d1d5db; /* light gray borders */
+	--border-rgb: 209, 213, 219;
+
+	--error: #dc2626; /* red-600 */
+	--error-rgb: 220, 38, 38;
+
+	--success: #16a34a; /* green-600 */
+	--success-rgb: 22, 163, 74;
+
+	--warning: #d97706; /* amber-600 */
+	--warning-rgb: 217, 119, 6;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
+		/* Dark theme */
+		--background: #111827; /* deep slate */
+		--background-rgb: 17, 24, 39;
+
+		--foreground: #f3f4f6; /* near-white text */
+		--foreground-rgb: 243, 244, 246;
+
+		--accent: #3b82f6; /* bright blue */
+		--accent-rgb: 59, 130, 246;
+
+		--accent-foreground: #ffffff;
+		--accent-foreground-rgb: 255, 255, 255;
+
+		--muted: #1f2937; /* darker gray for panels */
+		--muted-rgb: 31, 41, 55;
+
+		--muted-foreground: #9ca3af;
+		--muted-foreground-rgb: 156, 163, 175;
+
+		--border: #374151; /* gray border */
+		--border-rgb: 55, 65, 81;
+
+		--error: #f87171; /* red-400 */
+		--error-rgb: 248, 113, 113;
+
+		--success: #4ade80; /* green-400 */
+		--success-rgb: 74, 222, 128;
+
+		--warning: #fbbf24; /* amber-400 */
+		--warning-rgb: 251, 191, 36;
 	}
 }
 
@@ -19,10 +75,9 @@ body {
 body {
 	color: var(--foreground);
 	background: var(--background);
-	font-family: Arial, Helvetica, sans-serif;
+	font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	font-family: var(--font-geist-sans);
 }
 
 * {
@@ -32,8 +87,14 @@ body {
 }
 
 a {
-	color: inherit;
+	color: var(--accent);
 	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+a:hover {
+	color: var(--accent-foreground);
+	background-color: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
