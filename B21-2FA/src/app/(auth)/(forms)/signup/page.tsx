@@ -29,7 +29,7 @@ export default function SignUpPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				router.push("/otp");
+				router.push("/otp/signup");
 			} else {
 				return setMessage({ text: data.message, type: "error" });
 			}

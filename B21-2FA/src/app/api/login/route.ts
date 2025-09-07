@@ -25,7 +25,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
 
 	// Generate otp
-	const currentOTP = await otp.generateOTP(preOTPToken);
+	const currentOTP = await otp.generateOTP(preOTPToken, "login");
 	// TODO: Send email
 	console.log(`The OTP is ${currentOTP}`);
 	return apiResponse("Logged in successfully.");

@@ -22,7 +22,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	// Query db for otp and compare with user input
-	const otpEntry = await db.getOTP(preOTPToken);
+	const otpEntry = await db.getOTPByType("signup", preOTPToken);
 	if (!otpEntry || otpEntry.otp !== reqOTP)
 		return apiResponse("Invalid OTP.", 401);
 	if (otpEntry.expiration < Date.now()) {
@@ -32,13 +32,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Delete pre-otp
 	cookieStore.delete("pre-otp");
-	db.deleteOTP(preOTPToken);
+	db.deleteOTPByType("signup", preOTPToken);
 
 	const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
-	// Validate user account if invalidated
-	if (otpEntry.validation) db.updateUser(username, { validated: true });
+	// Validate user account
+	db.updateUser(username, { validated: true });
 	// Create jwt token
 	const jwtToken = jwt.createJWT(username, await db.getSecret());
 	cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
-	return apiResponse("Logged in successfully.");
+	return apiResponse("Account was created successfully.");
 });

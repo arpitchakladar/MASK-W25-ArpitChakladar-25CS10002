@@ -1,15 +1,17 @@
 import * as db from "@/lib/db";
 
-const generate6DigitNumber = () =>
-	Math.floor(100000 + Math.random() * 900000).toString();
+function generate6DigitNumber() {
+	return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-export async function generateOTP(preOTPToken: string, validation = false) {
+export async function generateOTP(preOTPToken: string, type: db.OTPType) {
 	const otp = generate6DigitNumber();
-	db.createOTP({
+
+	await db.createOTPByType(type, {
 		preOTPToken,
-		expiration: Date.now() + 1000 * 60 * 10,
+		expiration: Date.now() + 1000 * 60 * 10, // 10 minutes
 		otp,
-		validation,
 	});
+
 	return otp;
 }

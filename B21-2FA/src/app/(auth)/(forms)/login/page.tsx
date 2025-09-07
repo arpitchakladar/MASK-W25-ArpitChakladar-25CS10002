@@ -27,7 +27,7 @@ export default function LogInPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				router.push("/otp");
+				router.push("/otp/login");
 			} else {
 				return setMessage({
 					text: data.message,

@@ -15,15 +15,28 @@ type OTP = {
 	preOTPToken: string;
 	otp: string;
 	expiration: number;
-	validation: boolean;
+};
+
+type RecoveryCode = {
+	username: string;
+	codes: string[];
+	secret: string;
 };
 
 type Database = {
 	users: User[];
-	otps: OTP[];
+	otps: {
+		signup: OTP[];
+		login: OTP[];
+		resetPassword: OTP[];
+		regenerateRecoveryCode: OTP[];
+	};
+	recoveryCodes: RecoveryCode[];
 	preOTPSecret: string;
 	secret: string;
 };
+
+export type OTPType = keyof Database["otps"];
 
 // ------------------ DB Helpers ------------------
 
@@ -38,7 +51,13 @@ async function readDb(): Promise<Database> {
 		if (err.code === "ENOENT") {
 			const database: Database = {
 				users: [],
-				otps: [],
+				otps: {
+					signup: [],
+					login: [],
+					resetPassword: [],
+					regenerateRecoveryCode: [],
+				},
+				recoveryCodes: [],
 				preOTPSecret: generateSalt(),
 				secret: generateSalt(),
 			};
@@ -102,45 +121,67 @@ export async function deleteUser(username: string) {
 	await writeDb(database);
 }
 
-// ------------------ OTP CRUD ------------------
+// ------------------ OTP CRUD per type ------------------
 
-export async function getOTP(preOTPToken: string) {
+export async function getOTPsByType(type: OTPType) {
 	const database = await readDb();
-	return database.otps.find((otp) => otp.preOTPToken === preOTPToken);
+	return database.otps[type];
 }
 
-export async function createOTP(otp: OTP) {
+export async function getOTPByType(type: OTPType, preOTPToken: string) {
 	const database = await readDb();
-	const exists = database.otps.find((o) => o.preOTPToken === otp.preOTPToken);
-	if (exists) throw new Error("OTP already exists for this token");
-	database.otps.push(otp);
+	return database.otps[type].find((o) => o.preOTPToken === preOTPToken);
+}
+
+export async function createOTPByType(type: OTPType, otp: OTP) {
+	const database = await readDb();
+	const exists = database.otps[type].find(
+		(o) => o.preOTPToken === otp.preOTPToken
+	);
+	if (exists) throw new Error(`OTP already exists for this token in ${type}`);
+	database.otps[type].push(otp);
 	await writeDb(database);
 }
 
-export async function updateOTP(preOTPToken: string, updates: Partial<OTP>) {
+export async function updateOTPByType(
+	type: OTPType,
+	preOTPToken: string,
+	updates: Partial<OTP>
+) {
 	const database = await readDb();
-	const entry = database.otps.find((o) => o.preOTPToken === preOTPToken);
-	if (!entry) throw new Error("OTP not found");
+	const entry = database.otps[type].find((o) => o.preOTPToken === preOTPToken);
+	if (!entry) throw new Error(`OTP not found in ${type}`);
 	Object.assign(entry, updates);
 	await writeDb(database);
 	return entry;
 }
 
-export async function deleteOTP(preOTPToken: string) {
+export async function deleteOTPByType(type: OTPType, preOTPToken: string) {
 	const database = await readDb();
-	const before = database.otps.length;
-	database.otps = database.otps.filter((o) => o.preOTPToken !== preOTPToken);
-	if (database.otps.length === before) throw new Error("OTP not found");
+	const before = database.otps[type].length;
+	database.otps[type] = database.otps[type].filter(
+		(o) => o.preOTPToken !== preOTPToken
+	);
+	if (database.otps[type].length === before)
+		throw new Error(`OTP not found in ${type}`);
 	await writeDb(database);
 }
 
 // ------------------ Cleanup ------------------
 
 // Remove expired OTPs every 30mins
+// Remove expired OTPs every 30 minutes
 setInterval(1000 * 60 * 30, async () => {
 	const database = await readDb();
 	const curDate = Date.now();
-	database.otps = database.otps.filter((otp) => otp.expiration > curDate);
+
+	// Loop through each OTP type and filter out expired ones
+	for (const type of Object.keys(database.otps) as OTPType[]) {
+		database.otps[type] = database.otps[type].filter(
+			(otp) => otp.expiration > curDate
+		);
+	}
+
 	await writeDb(database);
 });
 

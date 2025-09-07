@@ -38,7 +38,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
 
 		// Generate account validation OTP
-		const currentOTP = await otp.generateOTP(preOTPToken, true);
+		const currentOTP = await otp.generateOTP(preOTPToken, "signup");
 		// TODO: Send email
 		console.log(`The OTP is ${currentOTP}`);
 
