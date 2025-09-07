@@ -1,22 +1,22 @@
 "use client";
-
 import { useState } from "react";
 import { validateSignUp } from "@/lib/validation";
 import { useRouter } from "next/navigation";
+import { useMessage } from "@/app/MessageContext";
 
 export default function SignUpPage() {
 	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [message, setMessage] = useState("");
 	const router = useRouter();
+	const { setMessage } = useMessage();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
 			validateSignUp(username, email, password);
 		} catch (err: any) {
-			setMessage(`❌ ${err.message}`);
+			setMessage({ text: err.message, type: "error" });
 			return;
 		}
 
@@ -29,13 +29,12 @@ export default function SignUpPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setMessage(`✅ ${data.message}`);
 				router.push("/otp");
 			} else {
-				setMessage(`❌ ${data.message}`);
+				return setMessage({ text: data.message, type: "error" });
 			}
 		} catch (err) {
-			setMessage("⚠️ Something went wrong");
+			return setMessage({ text: "Something went wrong.", type: "error" });
 		}
 	};
 
@@ -66,8 +65,6 @@ export default function SignUpPage() {
 			/>
 
 			<button type="submit">Sign Up</button>
-
-			{message && <p className="">{message}</p>}
 		</form>
 	);
 }

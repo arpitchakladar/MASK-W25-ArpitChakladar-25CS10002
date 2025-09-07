@@ -2,18 +2,17 @@
 import { useState } from "react";
 import styles from "./otp.module.css";
 import { useRouter } from "next/navigation";
+import { useMessage } from "@/app/MessageContext";
 
 export default function OTPPage() {
 	const [otp, setOtp] = useState("");
-	const [message, setMessage] = useState("");
 	const router = useRouter();
+	const { setMessage } = useMessage();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!/^\d{6}$/.test(otp)) {
-			setMessage("Invalid OTP.");
-			return;
-		}
+		if (!/^\d{6}$/.test(otp))
+			return setMessage({ text: "Invalid OTP.", type: "error" });
 
 		try {
 			const res = await fetch("/api/otp", {
@@ -24,13 +23,13 @@ export default function OTPPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setMessage(`✅ ${data.message}`);
-				setTimeout(() => router.push("/"), 1000);
+				setMessage({ text: data.message, type: "success" });
+				return router.push("/");
 			} else {
-				setMessage(`❌ ${data.message}`);
+				return setMessage({ text: data.message, type: "error" });
 			}
 		} catch (err) {
-			setMessage("⚠️ Something went wrong");
+			return setMessage({ text: "Something went wrong.", type: "error" });
 		}
 	};
 
@@ -47,7 +46,6 @@ export default function OTPPage() {
 					onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
 				/>
 				<button type="submit">Submit</button>
-				{message && <p>{message}</p>}
 			</form>
 		</div>
 	);

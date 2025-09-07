@@ -2,17 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMessage } from "@/app/MessageContext";
 
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [message, setMessage] = useState("");
 	const router = useRouter();
+	const { setMessage } = useMessage();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!username || !password)
-			return setMessage("Please enter username and password.");
+			return setMessage({
+				text: "Please enter username and password.",
+				type: "error",
+			});
 
 		try {
 			const res = await fetch("/api/login", {
@@ -23,13 +27,18 @@ export default function LogInPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setMessage(`✅ ${data.message}`);
 				router.push("/otp");
 			} else {
-				setMessage(`❌ ${data.message}`);
+				return setMessage({
+					text: data.message,
+					type: "error",
+				});
 			}
 		} catch (err) {
-			setMessage("⚠️ Something went wrong");
+			return setMessage({
+				text: "Something went wrong.",
+				type: "error",
+			});
 		}
 	};
 
@@ -52,8 +61,6 @@ export default function LogInPage() {
 			/>
 
 			<button type="submit">Log In</button>
-
-			{message && <p>{message}</p>}
 		</form>
 	);
 }

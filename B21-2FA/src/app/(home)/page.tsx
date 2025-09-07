@@ -28,8 +28,8 @@ export default async function Home() {
 						className={styles.background}
 					/>
 					<div className={styles.card}>
-						<h1>Welcome!</h1>
-						<p>You have not yet logged in.</p>
+						<h1>Welcome...</h1>
+						<p>You are not logged in.</p>
 						<a href="/login">Log In</a>
 					</div>
 				</>
