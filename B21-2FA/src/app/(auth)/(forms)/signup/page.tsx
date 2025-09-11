@@ -4,7 +4,6 @@ import { validateSignUp } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
-import HiddenInput from "@/components/form/HiddenInput";
 import { useResizeForm } from "../../ResizeFormContext";
 
 export default function SignUpPage() {
@@ -103,14 +102,15 @@ export default function SignUpPage() {
 				onChange={(e) => setPassword(e.target.value)}
 				required
 			/>
-
-			<HiddenInput
-				field={otp}
-				type="text"
-				placeholder="Enter OTP"
-				onChange={(e) => setOtp((otp) => ({ ...otp, value: e.target.value }))}
-				required
-			/>
+			{otp.visible && (
+				<input
+					value={otp.value}
+					type="text"
+					placeholder="Enter OTP"
+					onChange={(e) => setOtp((otp) => ({ ...otp, value: e.target.value }))}
+					required
+				/>
+			)}
 
 			<button type="submit">{otp.visible ? "Sign Up" : "Send OTP"}</button>
 		</Form>

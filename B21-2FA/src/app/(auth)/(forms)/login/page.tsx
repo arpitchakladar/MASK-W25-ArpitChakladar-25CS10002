@@ -3,19 +3,22 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
-import HiddenInput from "@/components/form/HiddenInput";
 import { useResizeForm } from "../../ResizeFormContext";
 
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [otp, setOtp] = useState({ value: "", visible: false });
+	const [secondFactor, setSecondFactor] = useState<{
+		type: "otp" | "recovery";
+		value: string;
+		visible: boolean;
+	}>({ type: "otp", value: "", visible: false });
 	const resizeForm = useResizeForm();
 	const router = useRouter();
 	const { setMessage } = useMessage();
 	useEffect(() => {
 		resizeForm();
-	}, [otp.visible]);
+	}, [secondFactor.visible]);
 
 	const handleLoginSendOtp = async () => {
 		if (!username || !password)
@@ -33,7 +36,7 @@ export default function LogInPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setOtp((otp) => ({ ...otp, visible: true }));
+				setSecondFactor((secondFactor) => ({ ...secondFactor, visible: true }));
 			} else {
 				return setMessage({
 					text: data.message,
@@ -49,31 +52,48 @@ export default function LogInPage() {
 	};
 
 	const handleLogin = async () => {
-		if (!/^\d{6}$/.test(otp.value))
-			return setMessage({ text: "Invalid OTP.", type: "error" });
-
 		try {
-			const res = await fetch(`/api/otp/login`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ otp: otp.value }),
-			});
+			if (secondFactor.type === "otp") {
+				if (!/^\d{6}$/.test(secondFactor.value))
+					return setMessage({ text: "Invalid OTP.", type: "error" });
 
-			const data = await res.json();
-			if (res.ok) {
-				setMessage({ text: data.message, type: "success" });
-				return router.push("/");
+				const res = await fetch(`/api/otp/login`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ otp: secondFactor.value }),
+				});
+
+				const data = await res.json();
+				if (res.ok) {
+					setMessage({ text: data.message, type: "success" });
+					return router.push("/");
+				} else {
+					return setMessage({ text: data.message, type: "error" });
+				}
 			} else {
-				return setMessage({ text: data.message, type: "error" });
+				// Recovery code flow
+				const res = await fetch(`/api/recovery-code`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ recoveryCode: secondFactor.value }),
+				});
+
+				const data = await res.json();
+				if (res.ok) {
+					setMessage({ text: data.message, type: "success" });
+					return router.push("/");
+				} else {
+					return setMessage({ text: data.message, type: "error" });
+				}
 			}
-		} catch (err) {
+		} catch {
 			return setMessage({ text: "Something went wrong.", type: "error" });
 		}
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (otp.visible) handleLogin();
+		if (secondFactor.visible) handleLogin();
 		else handleLoginSendOtp();
 	};
 
@@ -95,15 +115,50 @@ export default function LogInPage() {
 				required
 			/>
 
-			<HiddenInput
-				field={otp}
-				type="text"
-				placeholder="Enter OTP"
-				onChange={(e) => setOtp((otp) => ({ ...otp, value: e.target.value }))}
-				required
-			/>
+			{secondFactor.visible && (
+				<>
+					{secondFactor.type === "otp" ? (
+						<input
+							type="text"
+							placeholder="Enter OTP"
+							value={secondFactor.value}
+							onChange={(e) =>
+								setSecondFactor((prev) => ({ ...prev, value: e.target.value }))
+							}
+							required
+						/>
+					) : (
+						<input
+							type="text"
+							placeholder="Enter Recovery Code"
+							value={secondFactor.value}
+							onChange={(e) =>
+								setSecondFactor((prev) => ({ ...prev, value: e.target.value }))
+							}
+							required
+						/>
+					)}
 
-			<button type="submit">{otp.visible ? "Log In" : "Send OTP"}</button>
+					<button
+						type="button"
+						onClick={() =>
+							setSecondFactor((prev) => ({
+								...prev,
+								type: prev.type === "otp" ? "recovery" : "otp",
+								value: "",
+							}))
+						}
+					>
+						{secondFactor.type === "otp"
+							? "Use recovery code instead"
+							: "Use OTP instead"}
+					</button>
+				</>
+			)}
+
+			<button type="submit">
+				{secondFactor.visible ? "Log In" : "Send OTP"}
+			</button>
 		</Form>
 	);
 }
