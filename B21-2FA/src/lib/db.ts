@@ -4,23 +4,23 @@ import { setInterval } from "timers/promises";
 
 const DB_FILE = "db.json";
 
+type RecoveryCode = {
+	codes: string[];
+	secret: string;
+};
+
 type User = {
 	username: string;
 	email: string;
 	password: string;
 	validated: boolean;
+	recoveryCodes: RecoveryCode[];
 };
 
 type OTP = {
 	preOTPToken: string;
 	otp: string;
 	expiration: number;
-};
-
-type RecoveryCode = {
-	username: string;
-	codes: string[];
-	secret: string;
 };
 
 type Database = {
@@ -31,7 +31,6 @@ type Database = {
 		resetPassword: OTP[];
 		regenerateRecoveryCode: OTP[];
 	};
-	recoveryCodes: RecoveryCode[];
 	preOTPSecret: string;
 	secret: string;
 };
@@ -57,7 +56,6 @@ async function readDb(): Promise<Database> {
 					resetPassword: [],
 					regenerateRecoveryCode: [],
 				},
-				recoveryCodes: [],
 				preOTPSecret: generateSalt(),
 				secret: generateSalt(),
 			};

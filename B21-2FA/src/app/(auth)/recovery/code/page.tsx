@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 
-export default function LogInPage() {
+export default function RecoveryCodePage() {
+	const [username, setUsername] = useState("");
 	const [recoveryCode, setRecoveryCode] = useState("");
 	const router = useRouter();
 	const { setMessage } = useMessage();
@@ -42,6 +43,13 @@ export default function LogInPage() {
 
 	return (
 		<form onSubmit={handleSubmit}>
+			<input
+				type="text"
+				placeholder="Username"
+				value={username}
+				onChange={(e) => setUsername(e.target.value)}
+				required
+			/>
 			<input
 				type="text"
 				placeholder="Recovery Code"
