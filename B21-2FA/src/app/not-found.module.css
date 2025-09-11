@@ -1,0 +1,39 @@
+.container {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	background: var(--background);
+	color: var(--foreground);
+	gap: 16px;
+}
+
+.title {
+	font-size: 6rem;
+	font-weight: bold;
+	color: var(--accent);
+	margin: 0;
+}
+
+.message {
+	font-size: 1.25rem;
+	color: var(--muted-foreground);
+}
+
+.button {
+	margin-top: 20px;
+	padding: 12px 24px;
+	border-radius: 9999px;
+	background: var(--accent);
+	color: var(--accent-foreground);
+	text-decoration: none;
+	font-weight: bold;
+	transition: background 0.3s ease, color 0.3s ease;
+}
+
+.button:hover {
+	background: var(--foreground);
+	color: var(--background);
+}

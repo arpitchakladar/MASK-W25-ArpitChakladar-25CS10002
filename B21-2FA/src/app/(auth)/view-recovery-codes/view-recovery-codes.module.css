@@ -1,0 +1,37 @@
+.container {
+	padding: 20px;
+	text-align: center;
+}
+
+.heading {
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.codes {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	margin-bottom: 30px;
+}
+
+.noCodes {
+	text-align: center;
+	margin-bottom: 30px;
+}
+
+.homeButton {
+	border: none;
+	background: var(--accent);
+	color: var(--accent-foreground);
+	cursor: pointer;
+	font-weight: bold;
+	padding: 12px 20px;
+	border-radius: 9999px;
+	font-size: 1rem;
+	transition: all 0.2s ease;
+}
+
+.homeButton:hover {
+	background: var(--foreground);
+	color: var(--background);
+}
