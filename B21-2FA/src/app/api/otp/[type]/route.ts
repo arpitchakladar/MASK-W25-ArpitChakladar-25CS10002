@@ -38,11 +38,22 @@ export const POST = withErrorHandler(
 		cookieStore.delete("pre-otp");
 		db.deleteOTPByType(params.type, preOTPToken);
 
+		const data: { recoveryCodes?: string[] } = {};
+
 		const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
-		if (params.type === "signup") db.updateUser(username, { validated: true });
+		if (params.type === "signup") {
+			const user = await db.getUser(username);
+			if (!user) throw Error("User doesn't exist with the given jwt.");
+			data.recoveryCodes = user.recoveryCodes.codes;
+			await db.updateUser(username, {
+				validated: true,
+				// TODO: Hash the codes here
+				recoveryCodes: { salt: "salted", codes: user.recoveryCodes.codes },
+			});
+		}
 		// Create jwt token
 		const jwtToken = jwt.createJWT(username, await db.getSecret());
 		cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
-		return apiResponse("Logged in successfully.");
+		return apiResponse("Logged in successfully.", 200, data);
 	}
 );

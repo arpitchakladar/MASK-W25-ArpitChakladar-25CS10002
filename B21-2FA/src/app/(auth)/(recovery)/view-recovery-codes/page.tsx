@@ -1,26 +1,30 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import authStyles from "../../auth.module.css";
 import styles from "./view-recovery-codes.module.css";
 import Link from "next/link";
 
 export default function ViewRecoveryCodesPage() {
+	const [codes, setCodes] = useState<string[]>([]);
+
+	useEffect(() => {
+		const stored = sessionStorage.getItem("recoveryCodes");
+		if (stored) {
+			setCodes(JSON.parse(stored));
+		}
+	}, []);
+
 	return (
 		<div className={authStyles.container}>
 			<div className={authStyles.content}>
 				<div className={`${authStyles.form} ${styles.container}`}>
 					<h1 className={styles.heading}>Recovery Codes</h1>
 					<div className={styles.codes}>
-						<p>6H9X-2K7M</p>
-						<p>RV4T-QN2Y</p>
-						<p>A8PZ-7H5C</p>
-						<p>MK3N-9D2X</p>
-						<p>YF6J-4T8W</p>
-						<p>Q7DZ-1M5R</p>
-						<p>H2XK-9L8V</p>
-						<p>W3TP-7N6Q</p>
-						<p>B9YC-2F4M</p>
-						<p>ZT5H-8K1R</p>
+						{codes.length > 0 ? (
+							codes.map((code, i) => <p key={i}>{code}</p>)
+						) : (
+							<p>No recovery codes available.</p>
+						)}
 					</div>
 					<Link className={styles.homeButton} href="/">
 						Home

@@ -4,9 +4,9 @@ import { setInterval } from "timers/promises";
 
 const DB_FILE = "db.json";
 
-type RecoveryCode = {
+type RecoveryCodes = {
 	codes: string[];
-	secret: string;
+	salt: string;
 };
 
 type User = {
@@ -14,7 +14,7 @@ type User = {
 	email: string;
 	password: string;
 	validated: boolean;
-	recoveryCodes: RecoveryCode[];
+	recoveryCodes: RecoveryCodes;
 };
 
 type OTP = {

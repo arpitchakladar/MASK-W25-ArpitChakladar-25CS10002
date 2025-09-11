@@ -65,7 +65,11 @@ export default function SignUpPage() {
 			const data = await res.json();
 			if (res.ok) {
 				setMessage({ text: data.message, type: "success" });
-				return router.push("/");
+				sessionStorage.setItem(
+					"recoveryCodes",
+					JSON.stringify(data.recoveryCodes)
+				);
+				return router.push("/view-recovery-codes");
 			} else {
 				return setMessage({ text: data.message, type: "error" });
 			}

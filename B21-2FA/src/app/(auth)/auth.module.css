@@ -60,6 +60,12 @@
 	box-shadow: none;
 }
 
+.active_tab:hover {
+	background: var(--background) !important;
+	color: var(--foreground) !important;
+	box-shadow: none !important;
+}
+
 .form {
 	background-color: var(--background);
 	border-radius: 0 0 20px 20px !important;

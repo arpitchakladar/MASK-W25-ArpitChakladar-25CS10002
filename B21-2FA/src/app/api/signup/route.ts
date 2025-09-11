@@ -25,11 +25,17 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		// Create user
 		const salt = hashing.generateSalt();
 		const passwordHash = hashing.getHash(password, salt);
+		const recoveryCodes = ["dsaf", "dsfadsf", "fdasfads", "dsafgas"];
 		db.createUser({
 			username,
 			email,
 			password: passwordHash + "$" + salt,
 			validated: false,
+			// Here recovery codes are stored in plain text
+			recoveryCodes: {
+				codes: recoveryCodes,
+				salt: "dsaf",
+			},
 		});
 
 		// Issue pre-OTP token
