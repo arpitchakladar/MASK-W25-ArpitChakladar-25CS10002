@@ -1,15 +1,10 @@
-import { NextResponse } from "next/server";
-
 export function withErrorHandler(handler: Function) {
 	return async (...args: any[]) => {
 		try {
 			return await handler(...args);
 		} catch (err: any) {
-			console.error("API Error:", err);
-			return NextResponse.json(
-				{ error: "Internal Server Error" },
-				{ status: 500 }
-			);
+			console.error("---------- API Error ----------\n", err);
+			return apiResponse("Internal Server Error", 500);
 		}
 	};
 }
