@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "../auth.module.css";
-import { ResizeFormContext } from "./ResizeFormContext";
+import { ResizeFormContext } from "../ResizeFormContext";
 
 export default function AuthLayout({
 	children,

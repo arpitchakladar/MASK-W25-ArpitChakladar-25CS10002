@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import HiddenInput from "@/components/form/HiddenInput";
-import { useResizeForm } from "../ResizeFormContext";
+import { useResizeForm } from "../../ResizeFormContext";
 
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
