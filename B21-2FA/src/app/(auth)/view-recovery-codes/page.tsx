@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import authStyles from "../../auth.module.css";
+import authStyles from "../auth.module.css";
 import styles from "./view-recovery-codes.module.css";
 import Link from "next/link";
 

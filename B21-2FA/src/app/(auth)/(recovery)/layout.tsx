@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "../auth.module.css";
 import { ResizeFormContext } from "../ResizeFormContext";
 
-export default function AuthLayout({
+export default function RecoveryLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
@@ -31,20 +31,20 @@ export default function AuthLayout({
 			<div className={styles.content}>
 				<div className={styles.tab_bar}>
 					<Link
-						href="/login"
+						href="/recovery-code"
 						className={`${styles.tab} ${
-							pathname === "/login" ? styles.active_tab : ""
+							pathname === "/recovery-code" ? styles.active_tab : ""
 						}`}
 					>
-						Log In
+						Recovery Code
 					</Link>
 					<Link
-						href="/signup"
+						href="/recovery-email"
 						className={`${styles.tab} ${
-							pathname === "/signup" ? styles.active_tab : ""
+							pathname === "/recovery-email" ? styles.active_tab : ""
 						}`}
 					>
-						Sign Up
+						Recovery Email
 					</Link>
 				</div>
 
