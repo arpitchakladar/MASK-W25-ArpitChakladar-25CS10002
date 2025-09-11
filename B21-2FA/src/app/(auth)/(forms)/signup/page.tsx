@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { validateSignUp } from "@/lib/validation";
+import { validateSignUp } from "@/lib/form-validation";
 import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import { useResizeForm } from "../../ResizeFormContext";
+import { apiRequest } from "@/lib/apiHandler";
 
 export default function SignUpPage() {
 	const [username, setUsername] = useState("");
@@ -32,21 +33,15 @@ export default function SignUpPage() {
 			return;
 		}
 
-		try {
-			const res = await fetch("/api/signup", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, email, password }),
-			});
-
-			const data = await res.json();
-			if (res.ok) {
-				return setOtp((otp) => ({ ...otp, visible: true }));
-			} else {
-				return setMessage({ text: data.message, type: "error" });
-			}
-		} catch (err) {
-			return setMessage({ text: "Something went wrong.", type: "error" });
+		const { ok, data } = await apiRequest("/api/signup", {
+			username,
+			email,
+			password,
+		});
+		if (ok) {
+			setOtp((otp) => ({ ...otp, visible: true }));
+		} else {
+			setMessage({ text: data.message, type: "error" });
 		}
 	};
 
@@ -54,26 +49,18 @@ export default function SignUpPage() {
 		if (!/^\d{6}$/.test(otp.value))
 			return setMessage({ text: "Invalid OTP.", type: "error" });
 
-		try {
-			const res = await fetch(`/api/otp/signup`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ otp: otp.value }),
-			});
-
-			const data = await res.json();
-			if (res.ok) {
-				setMessage({ text: data.message, type: "success" });
-				sessionStorage.setItem(
-					"recoveryCodes",
-					JSON.stringify(data.recoveryCodes)
-				);
-				return router.push("/view-recovery-codes");
-			} else {
-				return setMessage({ text: data.message, type: "error" });
-			}
-		} catch (err) {
-			return setMessage({ text: "Something went wrong.", type: "error" });
+		const { ok, data } = await apiRequest("/api/otp/signup", {
+			otp: otp.value,
+		});
+		if (ok) {
+			setMessage({ text: data.message, type: "success" });
+			sessionStorage.setItem(
+				"recoveryCodes",
+				JSON.stringify(data.recoveryCodes)
+			);
+			router.push("/view-recovery-codes");
+		} else {
+			setMessage({ text: data.message, type: "error" });
 		}
 	};
 

@@ -6,6 +6,7 @@ import Form from "@/components/form/Form";
 import { useResizeForm } from "../../ResizeFormContext";
 import Link from "next/link";
 import styles from "./login.module.css";
+import { apiRequest } from "@/lib/apiHandler";
 
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
@@ -29,30 +30,14 @@ export default function LogInPage() {
 				type: "error",
 			});
 
-		try {
-			const res = await fetch("/api/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, password }),
-			});
-
-			const data = await res.json();
-			if (res.ok) {
-				return setSecondFactor((secondFactor) => ({
-					...secondFactor,
-					visible: true,
-				}));
-			} else {
-				return setMessage({
-					text: data.message,
-					type: "error",
-				});
-			}
-		} catch (err) {
-			return setMessage({
-				text: "Something went wrong.",
-				type: "error",
-			});
+		const { ok, data } = await apiRequest("/api/login", { username, password });
+		if (ok) {
+			setSecondFactor((secondFactor) => ({
+				...secondFactor,
+				visible: true,
+			}));
+		} else {
+			setMessage({ text: data.message, type: "error" });
 		}
 	};
 
@@ -62,37 +47,28 @@ export default function LogInPage() {
 				if (!/^\d{6}$/.test(secondFactor.value))
 					return setMessage({ text: "Invalid OTP.", type: "error" });
 
-				const res = await fetch(`/api/otp/login`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ otp: secondFactor.value }),
+				const { ok, data } = await apiRequest("/api/otp/login", {
+					otp: secondFactor.value,
 				});
-
-				const data = await res.json();
-				if (res.ok) {
+				if (ok) {
 					setMessage({ text: data.message, type: "success" });
-					return router.push("/");
+					router.push("/");
 				} else {
-					return setMessage({ text: data.message, type: "error" });
+					setMessage({ text: data.message, type: "error" });
 				}
 			} else {
-				// Recovery code flow
-				const res = await fetch(`/api/recovery-code`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ recoveryCode: secondFactor.value }),
+				const { ok, data } = await apiRequest("/api/recovery-code", {
+					recoveryCode: secondFactor.value,
 				});
-
-				const data = await res.json();
-				if (res.ok) {
+				if (ok) {
 					setMessage({ text: data.message, type: "success" });
-					return router.push("/");
+					router.push("/");
 				} else {
-					return setMessage({ text: data.message, type: "error" });
+					setMessage({ text: data.message, type: "error" });
 				}
 			}
 		} catch {
-			return setMessage({ text: "Something went wrong.", type: "error" });
+			setMessage({ text: "Something went wrong.", type: "error" });
 		}
 	};
 
@@ -106,7 +82,7 @@ export default function LogInPage() {
 		<Form onSubmit={handleSubmit}>
 			<input
 				type="text"
-				placeholder="Enter Username"
+				placeholder="Enter Username Or Email"
 				value={username}
 				onChange={(e) => setUsername(e.target.value)}
 				disabled={secondFactor.visible}
