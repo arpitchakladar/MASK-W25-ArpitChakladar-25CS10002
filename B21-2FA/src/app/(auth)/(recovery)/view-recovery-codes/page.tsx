@@ -19,13 +19,15 @@ export default function ViewRecoveryCodesPage() {
 			<div className={authStyles.content}>
 				<div className={`${authStyles.form} ${styles.container}`}>
 					<h1 className={styles.heading}>Recovery Codes</h1>
-					<div className={styles.codes}>
-						{codes.length > 0 ? (
-							codes.map((code, i) => <p key={i}>{code}</p>)
-						) : (
-							<p>No recovery codes available.</p>
-						)}
-					</div>
+					{codes.length > 0 ? (
+						<div className={styles.codes}>
+							{codes.map((code, i) => (
+								<p key={i}>{code}</p>
+							))}
+						</div>
+					) : (
+						<div className={styles.noCodes}>No recovery codes available.</div>
+					)}
 					<Link className={styles.homeButton} href="/">
 						Home
 					</Link>

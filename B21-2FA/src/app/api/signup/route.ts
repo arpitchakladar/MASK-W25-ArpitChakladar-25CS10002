@@ -6,6 +6,7 @@ import * as validation from "@/lib/validation";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
+import { generateRecoveryCodes } from "@/lib/recovery";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	try {
@@ -25,7 +26,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		// Create user
 		const salt = hashing.generateSalt();
 		const passwordHash = hashing.getHash(password, salt);
-		const recoveryCodes = ["dsaf", "dsfadsf", "fdasfads", "dsafgas"];
+		const recoveryCodes = generateRecoveryCodes();
 		db.createUser({
 			username,
 			email,
@@ -34,7 +35,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 			// Here recovery codes are stored in plain text
 			recoveryCodes: {
 				codes: recoveryCodes,
-				salt: "dsaf",
+				salt: "",
 			},
 		});
 

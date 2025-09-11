@@ -14,6 +14,11 @@
 	margin-bottom: 30px;
 }
 
+.noCodes {
+	text-align: center;
+	margin-bottom: 30px;
+}
+
 .homeButton {
 	border: none;
 	background: var(--accent);

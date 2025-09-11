@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
+import { generateSalt, getHash } from "@/lib/hashing";
 
 export const POST = withErrorHandler(
 	async (req: NextRequest, context: { params: Promise<{ type: string }> }) => {
@@ -45,10 +46,13 @@ export const POST = withErrorHandler(
 			const user = await db.getUser(username);
 			if (!user) throw Error("User doesn't exist with the given jwt.");
 			data.recoveryCodes = user.recoveryCodes.codes;
+			const salt = generateSalt();
 			await db.updateUser(username, {
 				validated: true,
-				// TODO: Hash the codes here
-				recoveryCodes: { salt: "salted", codes: user.recoveryCodes.codes },
+				recoveryCodes: {
+					salt: salt,
+					codes: user.recoveryCodes.codes.map((code) => getHash(code, salt)),
+				},
 			});
 		}
 		// Create jwt token
