@@ -36,7 +36,10 @@ export default function LogInPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setSecondFactor((secondFactor) => ({ ...secondFactor, visible: true }));
+				return setSecondFactor((secondFactor) => ({
+					...secondFactor,
+					visible: true,
+				}));
 			} else {
 				return setMessage({
 					text: data.message,

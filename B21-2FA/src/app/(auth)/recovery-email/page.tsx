@@ -13,7 +13,7 @@ export default function RecoveryEmailPage() {
 	const router = useRouter();
 	const { setMessage } = useMessage();
 
-	const handleEcoveryEmailOtp = async () => {
+	const handleRecoveryEmailOtp = async () => {
 		if (!email)
 			return setMessage({
 				text: "Please enter email.",
@@ -29,7 +29,41 @@ export default function RecoveryEmailPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setOtp((otp) => ({ ...otp, visible: true }));
+				return setOtp((otp) => ({ ...otp, visible: true }));
+			} else {
+				return setMessage({
+					text: data.message,
+					type: "error",
+				});
+			}
+		} catch (err) {
+			return setMessage({
+				text: "Something went wrong.",
+				type: "error",
+			});
+		}
+	};
+	const handleRecoveryEmailOtpValidation = async () => {
+		if (!otp.value || otp.value.length !== 6)
+			return setMessage({
+				text: "Please enter otp.",
+				type: "error",
+			});
+
+		try {
+			const res = await fetch("/api/recovery-email/validate", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ otp: otp.value }),
+			});
+
+			const data = await res.json();
+			if (res.ok) {
+				setMessage({
+					text: data.message,
+					type: "success",
+				});
+				return setPassword((password) => ({ ...password, visible: true }));
 			} else {
 				return setMessage({
 					text: data.message,
@@ -47,8 +81,8 @@ export default function RecoveryEmailPage() {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (otp.visible && password.visible) {
-		} else if (otp.visible) {
-		} else handleEcoveryEmailOtp();
+		} else if (otp.visible) handleRecoveryEmailOtpValidation();
+		else handleRecoveryEmailOtp();
 	};
 
 	return (

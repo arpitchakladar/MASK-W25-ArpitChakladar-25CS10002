@@ -41,7 +41,7 @@ export default function SignUpPage() {
 
 			const data = await res.json();
 			if (res.ok) {
-				setOtp((otp) => ({ ...otp, visible: true }));
+				return setOtp((otp) => ({ ...otp, visible: true }));
 			} else {
 				return setMessage({ text: data.message, type: "error" });
 			}
