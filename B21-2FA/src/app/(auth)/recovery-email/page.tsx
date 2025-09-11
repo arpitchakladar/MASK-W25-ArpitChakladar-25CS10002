@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import authStyles from "../auth.module.css";
-import { Esteban } from "next/font/google";
+import { validatePassword } from "@/lib/validation";
 
 export default function RecoveryEmailPage() {
 	const [email, setEmail] = useState("");
@@ -77,11 +77,46 @@ export default function RecoveryEmailPage() {
 			});
 		}
 	};
+	const handleResetPassword = async () => {
+		try {
+			validatePassword(password.value);
+		} catch (err: any) {
+			setMessage({ text: err.message, type: "error" });
+			return;
+		}
+
+		try {
+			const res = await fetch("/api/reset-password", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ password: password.value }),
+			});
+
+			const data = await res.json();
+			if (res.ok) {
+				setMessage({
+					text: data.message,
+					type: "success",
+				});
+				return router.push("/login");
+			} else {
+				return setMessage({
+					text: data.message,
+					type: "error",
+				});
+			}
+		} catch (err) {
+			return setMessage({
+				text: "Something went wrong.",
+				type: "error",
+			});
+		}
+	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (otp.visible && password.visible) {
-		} else if (otp.visible) handleRecoveryEmailOtpValidation();
+		if (otp.visible && password.visible) handleResetPassword();
+		else if (otp.visible) handleRecoveryEmailOtpValidation();
 		else handleRecoveryEmailOtp();
 	};
 
@@ -124,7 +159,11 @@ export default function RecoveryEmailPage() {
 							/>
 						)}
 						<button type="submit">
-							{otp.visible ? "Validate" : "Send OTP"}
+							{password.visible
+								? "Reset Password"
+								: otp.visible
+								? "Validate"
+								: "Send OTP"}
 						</button>
 					</Form>
 				</div>
