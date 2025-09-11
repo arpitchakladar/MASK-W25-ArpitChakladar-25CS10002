@@ -41,6 +41,7 @@ export default function SignUpPage() {
 			password,
 		});
 		if (ok) {
+			setMessage({ text: data.message, type: "success" });
 			setOtp((otp) => ({ ...otp, visible: true }));
 		} else {
 			setMessage({ text: data.message, type: "error" });
@@ -53,7 +54,7 @@ export default function SignUpPage() {
 
 		const { ok, data } = await apiRequest("/api/otp/signup", {
 			otp: otp.value,
-			rememberDevice, // ✅ send along with OTP
+			rememberDevice,
 		});
 		if (ok) {
 			setMessage({ text: data.message, type: "success" });

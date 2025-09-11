@@ -25,6 +25,7 @@ export default function RecoveryEmailPage() {
 		const { ok, data } = await apiRequest("/api/recovery-email", { email });
 		setLoading(false);
 		if (ok) {
+			setMessage({ text: data.message, type: "success" });
 			setOtp((otp) => ({ ...otp, visible: true }));
 		} else {
 			setMessage({ text: data.message, type: "error" });

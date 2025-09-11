@@ -45,7 +45,7 @@ export const POST = withErrorHandler(
 			.username as string;
 		if (params.type === "signup") {
 			const user = await db.getUser(username);
-			if (!user) throw Error("User doesn't exist with the given jwt.");
+			if (!user) throw Error("Unauthenticated.");
 			data.recoveryCodes = user.recoveryCodes.codes;
 			const salt = generateSalt();
 			await db.updateUser(username, {

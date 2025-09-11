@@ -33,11 +33,10 @@ export default function LogInPage() {
 
 		const { ok, data } = await apiRequest("/api/login", { username, password });
 		if (ok) {
-			if (data.skipOTP) {
-				setMessage({ text: data.message, type: "success" });
-				return router.push("/");
-			} else
-				return setSecondFactor((secondFactor) => ({
+			setMessage({ text: data.message, type: "success" });
+			if (data.skipOTP) router.push("/");
+			else
+				setSecondFactor((secondFactor) => ({
 					...secondFactor,
 					visible: true,
 				}));

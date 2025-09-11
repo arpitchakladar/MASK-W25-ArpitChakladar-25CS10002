@@ -61,5 +61,5 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const currentOTP = await otp.generateOTP(preAuthToken, "signup");
 	sendOtpEmail(email, currentOTP, "signup");
 
-	return apiResponse("Signed up successfully.", 201);
+	return apiResponse("Sent an OTP to your email.", 201);
 });

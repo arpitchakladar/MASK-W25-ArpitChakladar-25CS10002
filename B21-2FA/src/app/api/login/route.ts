@@ -57,5 +57,5 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Generate otp
 	const currentOTP = await otp.generateOTP(preAuthToken, "login");
 	sendOtpEmail(user.email, currentOTP, "login");
-	return apiResponse("Logged in successfully.", 200, { skipOTP: false });
+	return apiResponse("Sent an OTP to your email.", 200, { skipOTP: false });
 });
