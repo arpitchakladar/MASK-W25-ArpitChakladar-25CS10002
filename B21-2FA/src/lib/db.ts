@@ -43,12 +43,12 @@ export type OTPType = keyof Database["otps"];
 async function readDb(): Promise<Database> {
 	try {
 		const content = await fs.readFile(DB_FILE, "utf-8");
-		const database = JSON.parse(content) || {};
+		const database = JSON.parse(content.trim()) || {};
 		database.users ||= [];
 		database.otps ||= [];
 		return database;
 	} catch (err: any) {
-		if (err.code === "ENOENT") {
+		if (err.code === "ENOENT" || err instanceof SyntaxError) {
 			const database: Database = {
 				users: [],
 				otps: {

@@ -84,6 +84,7 @@ export default function SignUpPage() {
 				placeholder="Enter Username"
 				value={username}
 				onChange={(e) => setUsername(e.target.value)}
+				disabled={otp.visible}
 				required
 			/>
 
@@ -92,6 +93,7 @@ export default function SignUpPage() {
 				placeholder="Enter Email"
 				value={email}
 				onChange={(e) => setEmail(e.target.value)}
+				disabled={otp.visible}
 				required
 			/>
 
@@ -100,6 +102,7 @@ export default function SignUpPage() {
 				placeholder="Enter Password"
 				value={password}
 				onChange={(e) => setPassword(e.target.value)}
+				disabled={otp.visible}
 				required
 			/>
 			{otp.visible && (

@@ -107,6 +107,7 @@ export default function LogInPage() {
 				placeholder="Enter Username"
 				value={username}
 				onChange={(e) => setUsername(e.target.value)}
+				disabled={secondFactor.visible}
 				required
 			/>
 
@@ -115,6 +116,7 @@ export default function LogInPage() {
 				placeholder="Enter Password"
 				value={password}
 				onChange={(e) => setPassword(e.target.value)}
+				disabled={secondFactor.visible}
 				required
 			/>
 

@@ -131,6 +131,7 @@ export default function RecoveryEmailPage() {
 							placeholder="Enter Username Or Email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
+							disabled={otp.visible || password.visible}
 							required
 						/>
 						{otp.visible && (
@@ -141,6 +142,7 @@ export default function RecoveryEmailPage() {
 								onChange={(e) =>
 									setOtp((otp) => ({ ...otp, value: e.target.value }))
 								}
+								disabled={password.visible}
 								required
 							/>
 						)}
