@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "../auth.module.css";
+import { ResizeFormContext } from "./ResizeFormContext";
 
 export default function AuthLayout({
 	children,
@@ -13,14 +14,32 @@ export default function AuthLayout({
 	const pathname = usePathname();
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [height, setHeight] = useState("auto");
-	const [message, setMessage] = useState(null);
 
-	useEffect(() => {
+	const resizeForm = () => {
 		if (contentRef.current) {
 			const newHeight = contentRef.current.scrollHeight + "px";
 			setHeight(newHeight);
 		}
+	};
+
+	useEffect(() => {
+		resizeForm();
 	}, [pathname, children]);
+
+	const childrenWithProps = React.Children.map(children, (child) =>
+		React.isValidElement(child)
+			? React.cloneElement(
+					child as React.ReactElement<
+						Partial<{
+							resizeForm: () => void;
+						}>
+					>,
+					{
+						resizeForm,
+					}
+			  )
+			: child
+	);
 
 	return (
 		<div className={styles.container}>
@@ -45,7 +64,9 @@ export default function AuthLayout({
 				</div>
 
 				<div className={styles.form} style={{ height }}>
-					<div ref={contentRef}>{children}</div>
+					<ResizeFormContext.Provider value={resizeForm}>
+						<div ref={contentRef}>{childrenWithProps}</div>
+					</ResizeFormContext.Provider>
 				</div>
 			</div>
 		</div>
