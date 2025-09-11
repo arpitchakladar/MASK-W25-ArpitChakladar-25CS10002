@@ -1,12 +1,12 @@
 import { getHash } from "@/lib/hashing";
 
-export function createJWT(username: string, secret: string) {
-	const payload = JSON.stringify({
-		username,
+export function createJWT(payload: Record<string, any>, secret: string) {
+	const payloadString = JSON.stringify({
+		...payload,
 		expiration: Date.now() + 1000 * 60 * 60 * 24 * 90,
 	});
-	const jwtToken = getHash(payload, secret);
-	return btoa(payload) + "$" + jwtToken;
+	const jwtToken = getHash(payloadString, secret);
+	return btoa(payloadString) + "$" + jwtToken;
 }
 
 export function validateJWT(jwt: string, secret: string) {

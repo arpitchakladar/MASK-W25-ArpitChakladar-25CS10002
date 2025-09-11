@@ -5,8 +5,12 @@ import * as hashing from "@/lib/hashing";
 import * as jwt from "@/lib/jwt";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 
+type ResetPasswordRequestBody = {
+	password: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { password } = await req.json();
+	const { password } = (await req.json()) as ResetPasswordRequestBody;
 
 	const cookieStore = await cookies();
 	const resetPasswordToken = decodeURIComponent(
@@ -20,7 +24,8 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		return apiResponse("Invalid reset password token.", 401);
 	}
 	cookieStore.delete("resetPasswordToken");
-	const username = JSON.parse(atob(resetPasswordToken.split("$")[0])).username;
+	const username = JSON.parse(atob(resetPasswordToken.split("$")[0]))
+		.username as string;
 	const salt = hashing.generateSalt();
 	const passwordHash = hashing.getHash(password, salt);
 	await db.updateUser(username, {

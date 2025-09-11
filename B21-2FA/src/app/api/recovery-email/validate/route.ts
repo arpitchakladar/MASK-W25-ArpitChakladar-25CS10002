@@ -4,8 +4,13 @@ import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 
+type RecoveryEmailValidateRequestBody = {
+	otp: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { otp: reqOTP } = await req.json();
+	const { otp: reqOTP } =
+		(await req.json()) as RecoveryEmailValidateRequestBody;
 
 	// Read recoveryEmailToken cookie
 	const cookieStore = await cookies();
@@ -37,9 +42,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	cookieStore.delete("recoveryEmailToken");
 	db.deleteOTPByType("recoveryEmailToken", recoveryEmailToken);
 
-	const username = JSON.parse(atob(recoveryEmailToken.split("$")[0])).username;
+	const username = JSON.parse(atob(recoveryEmailToken.split("$")[0]))
+		.username as string;
 	const resetPasswordToken = jwt.createJWT(
-		username,
+		{ username },
 		await db.getResetPasswordSecret()
 	);
 	cookieStore.set(

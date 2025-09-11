@@ -5,8 +5,12 @@ import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import { getHash } from "@/lib/hashing";
 
+type RecoveryCodeRequestBody = {
+	recoveryCode: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { recoveryCode } = await req.json();
+	const { recoveryCode } = (await req.json()) as RecoveryCodeRequestBody;
 
 	const cookieStore = await cookies();
 	const preAuthToken = decodeURIComponent(
@@ -44,7 +48,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	cookieStore.delete("preAuthToken");
 	db.deleteOTPByType("login", preAuthToken);
 
-	const authToken = jwt.createJWT(username, await db.getAuthTokenSecret());
+	const authToken = jwt.createJWT({ username }, await db.getAuthTokenSecret());
 	cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
 	return apiResponse("Logged in successfully.");
 });

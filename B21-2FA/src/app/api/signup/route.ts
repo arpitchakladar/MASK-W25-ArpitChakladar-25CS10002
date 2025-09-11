@@ -8,8 +8,14 @@ import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { generateRecoveryCodes } from "@/lib/recoveryCodes";
 
+type SignUpRequestBody = {
+	username: string;
+	email: string;
+	password: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { username, email, password } = await req.json();
+	const { username, email, password } = (await req.json()) as SignUpRequestBody;
 
 	// User already exists
 	if ((await db.getUser(username)) || (await db.getUser(email)))
@@ -42,7 +48,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Issue pre-OTP token
 	const cookieStore = await cookies();
 	const preAuthToken = jwt.createJWT(
-		username,
+		{ username },
 		await db.getPreAuthTokenSecret()
 	);
 	cookieStore.set("preAuthToken", encodeURIComponent(preAuthToken), {

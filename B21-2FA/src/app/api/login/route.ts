@@ -6,8 +6,13 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 
+type LogInRequestBody = {
+	username: string;
+	password: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { username, password } = await req.json();
+	const { username, password } = (await req.json()) as LogInRequestBody;
 
 	// Query database for users
 	const user = await db.getUser(username);
@@ -22,7 +27,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Set preAuthToken jwt cookie
 	const cookieStore = await cookies();
 	const preAuthToken = jwt.createJWT(
-		username,
+		{ username },
 		await db.getPreAuthTokenSecret()
 	);
 	cookieStore.set("preAuthToken", encodeURIComponent(preAuthToken), {

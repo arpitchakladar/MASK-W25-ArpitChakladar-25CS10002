@@ -41,7 +41,8 @@ export const POST = withErrorHandler(
 
 		const data: { recoveryCodes?: string[] } = {};
 
-		const username = JSON.parse(atob(preAuthToken.split("$")[0])).username;
+		const username = JSON.parse(atob(preAuthToken.split("$")[0]))
+			.username as string;
 		if (params.type === "signup") {
 			const user = await db.getUser(username);
 			if (!user) throw Error("User doesn't exist with the given jwt.");
@@ -56,7 +57,10 @@ export const POST = withErrorHandler(
 			});
 		}
 		// Create authToken token
-		const authToken = jwt.createJWT(username, await db.getAuthTokenSecret());
+		const authToken = jwt.createJWT(
+			{ username },
+			await db.getAuthTokenSecret()
+		);
 		cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
 		return apiResponse("Logged in successfully.", 200, data);
 	}

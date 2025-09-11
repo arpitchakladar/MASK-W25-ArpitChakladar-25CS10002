@@ -5,8 +5,12 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 
+type RecoveryEmailRequestBody = {
+	email: string;
+};
+
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { email } = await req.json();
+	const { email } = (await req.json()) as RecoveryEmailRequestBody;
 
 	// Query database for users
 	const user = await db.getUser(email);
@@ -16,7 +20,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Set recoveryEmailToken jwt cookie
 	const cookieStore = await cookies();
 	const recoveryEmailToken = jwt.createJWT(
-		user.username,
+		{ username: user.username },
 		await db.getRecoveryEmailTokenSecret()
 	);
 	cookieStore.set(
