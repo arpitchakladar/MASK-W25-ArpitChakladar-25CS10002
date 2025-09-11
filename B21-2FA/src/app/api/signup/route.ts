@@ -6,7 +6,7 @@ import * as validation from "@/lib/validation";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { generateRecoveryCodes } from "@/lib/recovery";
+import { generateRecoveryCodes } from "@/lib/recoveryCodes";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { username, email, password } = await req.json();
@@ -26,12 +26,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const salt = hashing.generateSalt();
 	const passwordHash = hashing.getHash(password, salt);
 	const recoveryCodes = generateRecoveryCodes();
+	// TODO: User creation should be done after otp validation
 	db.createUser({
 		username,
 		email,
 		password: passwordHash + "$" + salt,
 		validated: false,
-		// Here recovery codes are stored in plain text
+		// Here recovery codes are stored in plain text, until account is verified
 		recoveryCodes: {
 			codes: recoveryCodes,
 			salt: "",
@@ -40,11 +41,16 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Issue pre-OTP token
 	const cookieStore = await cookies();
-	const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
-	cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
+	const preAuthToken = jwt.createJWT(
+		username,
+		await db.getPreAuthTokenSecret()
+	);
+	cookieStore.set("preAuthToken", encodeURIComponent(preAuthToken), {
+		path: "/",
+	});
 
 	// Generate account validation OTP
-	const currentOTP = await otp.generateOTP(preOTPToken, "signup");
+	const currentOTP = await otp.generateOTP(preAuthToken, "signup");
 	// TODO: Send email
 	console.log(`The OTP is ${currentOTP}`);
 

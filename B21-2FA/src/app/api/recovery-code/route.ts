@@ -9,18 +9,18 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { recoveryCode } = await req.json();
 
 	const cookieStore = await cookies();
-	const preOTPToken = decodeURIComponent(
-		cookieStore.get("pre-otp")?.value || ""
+	const preAuthToken = decodeURIComponent(
+		cookieStore.get("preAuthToken")?.value || ""
 	);
 
 	try {
-		jwt.validateJWT(preOTPToken, await db.getPreOTPSecret());
+		jwt.validateJWT(preAuthToken, await db.getPreAuthTokenSecret());
 	} catch (err: any) {
-		cookieStore.delete("pre-otp");
+		cookieStore.delete("preAuthToken");
 		return apiResponse("Invalid pre otp token.", 401);
 	}
 
-	const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
+	const username = JSON.parse(atob(preAuthToken.split("$")[0])).username;
 	const user = await db.getUser(username);
 
 	if (!user) throw Error("Using recovery code for a user that doesn't exist.");
@@ -41,10 +41,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 	if (!match) return apiResponse("Invalid recovery token.", 401);
 
-	cookieStore.delete("pre-otp");
-	db.deleteOTPByType("login", preOTPToken);
+	cookieStore.delete("preAuthToken");
+	db.deleteOTPByType("login", preAuthToken);
 
-	const jwtToken = jwt.createJWT(username, await db.getSecret());
-	cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
+	const authToken = jwt.createJWT(username, await db.getAuthTokenSecret());
+	cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
 	return apiResponse("Logged in successfully.");
 });

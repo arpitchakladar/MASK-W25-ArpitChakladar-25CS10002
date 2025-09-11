@@ -4,6 +4,6 @@ import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const cookieStore = await cookies();
-	cookieStore.delete("jwt");
+	cookieStore.delete("authToken");
 	return apiResponse("Logged out successfully.");
 });

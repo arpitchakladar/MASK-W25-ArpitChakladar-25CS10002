@@ -6,12 +6,12 @@ import LogoutButton from "./LogoutButton"; // client component
 export default async function Home() {
 	// Server-side auth check
 	const cookieStore = await import("next/headers").then((m) => m.cookies());
-	const token = decodeURIComponent(cookieStore.get("jwt")?.value || "");
+	const token = decodeURIComponent(cookieStore.get("authToken")?.value || "");
 	let username: string | null = null;
 
 	if (token) {
 		try {
-			jwt.validateJWT(token, await db.getSecret());
+			jwt.validateJWT(token, await db.getAuthTokenSecret());
 			username = JSON.parse(atob(token.split("$")[0])).username;
 		} catch (err) {
 			username = null;

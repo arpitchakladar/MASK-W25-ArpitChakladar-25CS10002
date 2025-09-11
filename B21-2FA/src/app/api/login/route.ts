@@ -12,20 +12,25 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Query database for users
 	const user = await db.getUser(username);
 	if (!user || !user.validated)
-		return apiResponse("Your account was not found. Try creating one.", 404);
+		return apiResponse("Username or password was incorrect.", 401);
 
 	// Validate password
 	const [passwordHash, salt] = user.password.split("$");
 	if (passwordHash !== hashing.getHash(password, salt))
-		return apiResponse("Your password was incorrect.", 401);
+		return apiResponse("Username or password was incorrect.", 401);
 
-	// Set pre-otp jwt cookie
+	// Set preAuthToken jwt cookie
 	const cookieStore = await cookies();
-	const preOTPToken = jwt.createJWT(username, await db.getPreOTPSecret());
-	cookieStore.set("pre-otp", encodeURIComponent(preOTPToken), { path: "/" });
+	const preAuthToken = jwt.createJWT(
+		username,
+		await db.getPreAuthTokenSecret()
+	);
+	cookieStore.set("preAuthToken", encodeURIComponent(preAuthToken), {
+		path: "/",
+	});
 
 	// Generate otp
-	const currentOTP = await otp.generateOTP(preOTPToken, "login");
+	const currentOTP = await otp.generateOTP(preAuthToken, "login");
 	// TODO: Send email
 	console.log(`The OTP is ${currentOTP}`);
 	return apiResponse("Logged in successfully.");

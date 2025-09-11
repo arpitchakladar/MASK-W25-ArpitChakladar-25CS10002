@@ -12,36 +12,36 @@ export const POST = withErrorHandler(
 			return apiResponse("Page not found.", 404);
 		const { otp: reqOTP } = await req.json();
 
-		// Read pre-otp cookie
+		// Read preAuthToken cookie
 		const cookieStore = await cookies();
-		const preOTPToken = decodeURIComponent(
-			cookieStore.get("pre-otp")?.value || ""
+		const preAuthToken = decodeURIComponent(
+			cookieStore.get("preAuthToken")?.value || ""
 		);
 
-		// Validate pre-otp jwt
+		// Validate preAuthToken jwt
 		try {
-			jwt.validateJWT(preOTPToken, await db.getPreOTPSecret());
+			jwt.validateJWT(preAuthToken, await db.getPreAuthTokenSecret());
 		} catch (err: any) {
-			cookieStore.delete("pre-otp");
+			cookieStore.delete("preAuthToken");
 			return apiResponse("Invalid pre otp token.", 401);
 		}
 
 		// Query db for otp and compare with user input
-		const otpEntry = await db.getOTPByType(params.type, preOTPToken);
+		const otpEntry = await db.getOTPByType(params.type, preAuthToken);
 		if (!otpEntry || otpEntry.otp !== reqOTP)
 			return apiResponse("Invalid OTP.", 401);
 		if (otpEntry.expiration < Date.now()) {
-			cookieStore.delete("pre-otp");
+			cookieStore.delete("preAuthToken");
 			return apiResponse("OTP timeout.", 401);
 		}
 
-		// Delete pre-otp
-		cookieStore.delete("pre-otp");
-		db.deleteOTPByType(params.type, preOTPToken);
+		// Delete preAuthToken
+		cookieStore.delete("preAuthToken");
+		db.deleteOTPByType(params.type, preAuthToken);
 
 		const data: { recoveryCodes?: string[] } = {};
 
-		const username = JSON.parse(atob(preOTPToken.split("$")[0])).username;
+		const username = JSON.parse(atob(preAuthToken.split("$")[0])).username;
 		if (params.type === "signup") {
 			const user = await db.getUser(username);
 			if (!user) throw Error("User doesn't exist with the given jwt.");
@@ -55,9 +55,9 @@ export const POST = withErrorHandler(
 				},
 			});
 		}
-		// Create jwt token
-		const jwtToken = jwt.createJWT(username, await db.getSecret());
-		cookieStore.set("jwt", encodeURIComponent(jwtToken), { path: "/" });
+		// Create authToken token
+		const authToken = jwt.createJWT(username, await db.getAuthTokenSecret());
+		cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
 		return apiResponse("Logged in successfully.", 200, data);
 	}
 );

@@ -14,7 +14,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	);
 
 	try {
-		jwt.validateJWT(resetPasswordToken, await db.getSecret());
+		jwt.validateJWT(resetPasswordToken, await db.getResetPasswordSecret());
 	} catch (err: any) {
 		cookieStore.delete("resetPasswordToken");
 		return apiResponse("Invalid reset password token.", 401);

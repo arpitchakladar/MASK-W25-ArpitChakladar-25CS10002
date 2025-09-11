@@ -15,7 +15,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Validate recoveryEmailToken jwt
 	try {
-		jwt.validateJWT(recoveryEmailToken, await db.getPreOTPSecret());
+		jwt.validateJWT(recoveryEmailToken, await db.getRecoveryEmailTokenSecret());
 	} catch (err: any) {
 		cookieStore.delete("recoveryEmailToken");
 		return apiResponse("Invalid pre otp token.", 401);
@@ -38,7 +38,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	db.deleteOTPByType("recoveryEmailToken", recoveryEmailToken);
 
 	const username = JSON.parse(atob(recoveryEmailToken.split("$")[0])).username;
-	const resetPasswordToken = jwt.createJWT(username, await db.getSecret());
+	const resetPasswordToken = jwt.createJWT(
+		username,
+		await db.getResetPasswordSecret()
+	);
 	cookieStore.set(
 		"resetPasswordToken",
 		encodeURIComponent(resetPasswordToken),

@@ -18,7 +18,7 @@ type User = {
 };
 
 type OTP = {
-	preOTPToken: string;
+	token: string;
 	otp: string;
 	expiration: number;
 };
@@ -29,11 +29,11 @@ type Database = {
 		signup: OTP[];
 		login: OTP[];
 		recoveryEmailToken: OTP[];
-		resetPassword: OTP[];
-		regenerateRecoveryCode: OTP[];
 	};
-	preOTPSecret: string;
-	secret: string;
+	preAuthTokenSecret: string;
+	authTokenSecret: string;
+	recoveryEmailTokenSecret: string;
+	resetPasswordSecret: string;
 };
 
 export type OTPType = keyof Database["otps"];
@@ -55,11 +55,11 @@ async function readDb(): Promise<Database> {
 					signup: [],
 					login: [],
 					recoveryEmailToken: [],
-					resetPassword: [],
-					regenerateRecoveryCode: [],
 				},
-				preOTPSecret: generateSalt(),
-				secret: generateSalt(),
+				preAuthTokenSecret: generateSalt(),
+				authTokenSecret: generateSalt(),
+				recoveryEmailTokenSecret: generateSalt(),
+				resetPasswordSecret: generateSalt(),
 			};
 			await writeDb(database);
 			return database;
@@ -74,14 +74,21 @@ async function writeDb(data: Database): Promise<void> {
 
 // ------------------ Secrets ------------------
 
-export async function getPreOTPSecret() {
+export async function getPreAuthTokenSecret() {
 	const database = await readDb();
-	return database.preOTPSecret;
+	return database.preAuthTokenSecret;
 }
-
-export async function getSecret() {
+export async function getAuthTokenSecret() {
 	const database = await readDb();
-	return database.secret;
+	return database.authTokenSecret;
+}
+export async function getRecoveryEmailTokenSecret() {
+	const database = await readDb();
+	return database.recoveryEmailTokenSecret;
+}
+export async function getResetPasswordSecret() {
+	const database = await readDb();
+	return database.resetPasswordSecret;
 }
 
 // ------------------ User CRUD ------------------
@@ -128,16 +135,14 @@ export async function getOTPsByType(type: OTPType) {
 	return database.otps[type];
 }
 
-export async function getOTPByType(type: OTPType, preOTPToken: string) {
+export async function getOTPByType(type: OTPType, token: string) {
 	const database = await readDb();
-	return database.otps[type].find((o) => o.preOTPToken === preOTPToken);
+	return database.otps[type].find((o) => o.token === token);
 }
 
 export async function createOTPByType(type: OTPType, otp: OTP) {
 	const database = await readDb();
-	const exists = database.otps[type].find(
-		(o) => o.preOTPToken === otp.preOTPToken
-	);
+	const exists = database.otps[type].find((o) => o.token === otp.token);
 	if (exists) throw new Error(`OTP already exists for this token in ${type}`);
 	database.otps[type].push(otp);
 	await writeDb(database);
@@ -145,23 +150,21 @@ export async function createOTPByType(type: OTPType, otp: OTP) {
 
 export async function updateOTPByType(
 	type: OTPType,
-	preOTPToken: string,
+	token: string,
 	updates: Partial<OTP>
 ) {
 	const database = await readDb();
-	const entry = database.otps[type].find((o) => o.preOTPToken === preOTPToken);
+	const entry = database.otps[type].find((o) => o.token === token);
 	if (!entry) throw new Error(`OTP not found in ${type}`);
 	Object.assign(entry, updates);
 	await writeDb(database);
 	return entry;
 }
 
-export async function deleteOTPByType(type: OTPType, preOTPToken: string) {
+export async function deleteOTPByType(type: OTPType, token: string) {
 	const database = await readDb();
 	const before = database.otps[type].length;
-	database.otps[type] = database.otps[type].filter(
-		(o) => o.preOTPToken !== preOTPToken
-	);
+	database.otps[type] = database.otps[type].filter((o) => o.token !== token);
 	if (database.otps[type].length === before)
 		throw new Error(`OTP not found in ${type}`);
 	await writeDb(database);

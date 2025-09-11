@@ -13,11 +13,11 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	if (!user || !user.validated)
 		return apiResponse("Sent an OTP to your email.");
 
-	// Set pre-otp jwt cookie
+	// Set recoveryEmailToken jwt cookie
 	const cookieStore = await cookies();
 	const recoveryEmailToken = jwt.createJWT(
 		user.username,
-		await db.getPreOTPSecret()
+		await db.getRecoveryEmailTokenSecret()
 	);
 	cookieStore.set(
 		"recoveryEmailToken",
