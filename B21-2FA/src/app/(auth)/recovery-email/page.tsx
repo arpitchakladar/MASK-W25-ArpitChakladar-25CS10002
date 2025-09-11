@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import authStyles from "../auth.module.css";
+import { Esteban } from "next/font/google";
 
 export default function RecoveryEmailPage() {
 	const [email, setEmail] = useState("");
@@ -12,8 +13,42 @@ export default function RecoveryEmailPage() {
 	const router = useRouter();
 	const { setMessage } = useMessage();
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleEcoveryEmailOtp = async () => {
+		if (!email)
+			return setMessage({
+				text: "Please enter email.",
+				type: "error",
+			});
+
+		try {
+			const res = await fetch("/api/recovery-email", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email }),
+			});
+
+			const data = await res.json();
+			if (res.ok) {
+				setOtp((otp) => ({ ...otp, visible: true }));
+			} else {
+				return setMessage({
+					text: data.message,
+					type: "error",
+				});
+			}
+		} catch (err) {
+			return setMessage({
+				text: "Something went wrong.",
+				type: "error",
+			});
+		}
+	};
+
+	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
+		if (otp.visible && password.visible) {
+		} else if (otp.visible) {
+		} else handleEcoveryEmailOtp();
 	};
 
 	return (
@@ -21,9 +56,10 @@ export default function RecoveryEmailPage() {
 			<div className={authStyles.content}>
 				<div className={authStyles.form}>
 					<Form onSubmit={handleSubmit}>
+						<h1>Recovery Email</h1>
 						<input
-							type="email"
-							placeholder="Enter Email"
+							type="text"
+							placeholder="Enter Username Or Email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
@@ -54,7 +90,7 @@ export default function RecoveryEmailPage() {
 							/>
 						)}
 						<button type="submit">
-							{otp.visible ? "Set New Password" : "Send OTP"}
+							{otp.visible ? "Validate" : "Send OTP"}
 						</button>
 					</Form>
 				</div>

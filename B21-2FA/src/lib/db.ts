@@ -28,6 +28,7 @@ type Database = {
 	otps: {
 		signup: OTP[];
 		login: OTP[];
+		recoveryEmailToken: OTP[];
 		resetPassword: OTP[];
 		regenerateRecoveryCode: OTP[];
 	};
@@ -53,6 +54,7 @@ async function readDb(): Promise<Database> {
 				otps: {
 					signup: [],
 					login: [],
+					recoveryEmailToken: [],
 					resetPassword: [],
 					regenerateRecoveryCode: [],
 				},
