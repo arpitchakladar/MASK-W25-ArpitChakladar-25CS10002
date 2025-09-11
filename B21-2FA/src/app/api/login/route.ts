@@ -6,7 +6,7 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { sendOtpEmail } from "@/lib/email";
-import { skip } from "node:test";
+import { getClientIp, ipLimiter, userLimiter } from "@/lib/rateLimiter";
 
 type LogInRequestBody = {
 	username: string;
@@ -15,6 +15,15 @@ type LogInRequestBody = {
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { username, password } = (await req.json()) as LogInRequestBody;
+
+	const ip = getClientIp(req);
+
+	try {
+		await ipLimiter.consume(ip);
+		await userLimiter.consume(username);
+	} catch {
+		return apiResponse("Too many login attempts. Try again later.", 429);
+	}
 
 	// Query database for users
 	const user = await db.getUser(username);

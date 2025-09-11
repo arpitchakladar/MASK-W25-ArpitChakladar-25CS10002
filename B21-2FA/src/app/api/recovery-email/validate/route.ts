@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
+import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
 
 type RecoveryEmailValidateRequestBody = {
 	otp: string;
@@ -11,6 +12,16 @@ type RecoveryEmailValidateRequestBody = {
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { otp: reqOTP } =
 		(await req.json()) as RecoveryEmailValidateRequestBody;
+	const ip = getClientIp(req);
+
+	try {
+		await ipLimiter.consume(ip);
+	} catch {
+		return apiResponse(
+			"Too many account recovery attempts. Try again later.",
+			429
+		);
+	}
 
 	// Read recoveryEmailToken cookie
 	const cookieStore = await cookies();

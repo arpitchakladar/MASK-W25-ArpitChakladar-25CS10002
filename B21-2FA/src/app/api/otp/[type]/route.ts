@@ -4,12 +4,24 @@ import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import { generateSalt, getHash } from "@/lib/hashing";
+import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
 
 export const POST = withErrorHandler(
 	async (req: NextRequest, context: { params: Promise<{ type: string }> }) => {
 		const params = await context.params;
 		if (params.type !== "login" && params.type !== "signup")
 			return apiResponse("Page not found.", 404);
+
+		const ip = getClientIp(req);
+
+		try {
+			await ipLimiter.consume(ip);
+		} catch {
+			return apiResponse(
+				"Too many account recovery attempts. Try again later.",
+				429
+			);
+		}
 		const { otp: reqOTP, rememberDevice } = await req.json();
 
 		// Read preAuthToken cookie

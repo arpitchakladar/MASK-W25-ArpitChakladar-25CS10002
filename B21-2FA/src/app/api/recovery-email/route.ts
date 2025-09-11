@@ -5,6 +5,7 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { sendOtpEmail } from "@/lib/email";
+import { getClientIp, ipLimiter, emailLimiter } from "@/lib/rateLimiter";
 
 type RecoveryEmailRequestBody = {
 	email: string;
@@ -12,6 +13,18 @@ type RecoveryEmailRequestBody = {
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { email } = (await req.json()) as RecoveryEmailRequestBody;
+
+	const ip = getClientIp(req);
+
+	try {
+		await ipLimiter.consume(ip);
+		await emailLimiter.consume(email);
+	} catch {
+		return apiResponse(
+			"Too many account recovery attempts. Try again later.",
+			429
+		);
+	}
 
 	// Query database for users
 	const user = await db.getUser(email);

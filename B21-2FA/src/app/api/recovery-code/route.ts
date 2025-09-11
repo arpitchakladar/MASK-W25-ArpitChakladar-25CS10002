@@ -4,6 +4,7 @@ import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import { getHash } from "@/lib/hashing";
+import { getClientIp, ipLimiter, emailLimiter } from "@/lib/rateLimiter";
 
 type RecoveryCodeRequestBody = {
 	recoveryCode: string;
@@ -11,6 +12,17 @@ type RecoveryCodeRequestBody = {
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { recoveryCode } = (await req.json()) as RecoveryCodeRequestBody;
+
+	const ip = getClientIp(req);
+
+	try {
+		await ipLimiter.consume(ip);
+	} catch {
+		return apiResponse(
+			"Too many account recovery attempts. Try again later.",
+			429
+		);
+	}
 
 	const cookieStore = await cookies();
 	const preAuthToken = decodeURIComponent(

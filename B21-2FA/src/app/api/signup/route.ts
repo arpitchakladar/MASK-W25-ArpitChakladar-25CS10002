@@ -8,6 +8,12 @@ import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { generateRecoveryCodes } from "@/lib/recoveryCodes";
 import { sendOtpEmail } from "@/lib/email";
+import {
+	emailLimiter,
+	getClientIp,
+	ipLimiter,
+	userLimiter,
+} from "@/lib/rateLimiter";
 
 type SignUpRequestBody = {
 	username: string;
@@ -17,6 +23,15 @@ type SignUpRequestBody = {
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { username, email, password } = (await req.json()) as SignUpRequestBody;
+	const ip = getClientIp(req);
+
+	try {
+		await ipLimiter.consume(ip);
+		await userLimiter.consume(username);
+		await emailLimiter.consume(email);
+	} catch {
+		return apiResponse("Too many signup attempts. Try again later.", 429);
+	}
 
 	// User already exists
 	if ((await db.getUser(username)) || (await db.getUser(email)))
