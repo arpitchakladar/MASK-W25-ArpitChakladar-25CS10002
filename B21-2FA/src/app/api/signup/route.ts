@@ -7,6 +7,7 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { generateRecoveryCodes } from "@/lib/recoveryCodes";
+import { sendOtpEmail } from "@/lib/email";
 
 type SignUpRequestBody = {
 	username: string;
@@ -57,8 +58,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Generate account validation OTP
 	const currentOTP = await otp.generateOTP(preAuthToken, "signup");
-	// TODO: Send email
-	console.log(`The OTP is ${currentOTP}`);
+	sendOtpEmail(email, currentOTP, "login");
 
 	return apiResponse("Signed up successfully.", 201);
 });

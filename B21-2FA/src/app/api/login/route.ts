@@ -5,6 +5,7 @@ import * as hashing from "@/lib/hashing";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
+import { sendOtpEmail } from "@/lib/email";
 
 type LogInRequestBody = {
 	username: string;
@@ -36,7 +37,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Generate otp
 	const currentOTP = await otp.generateOTP(preAuthToken, "login");
-	// TODO: Send email
-	console.log(`The OTP is ${currentOTP}`);
+	sendOtpEmail(user.email, currentOTP, "login");
 	return apiResponse("Logged in successfully.");
 });

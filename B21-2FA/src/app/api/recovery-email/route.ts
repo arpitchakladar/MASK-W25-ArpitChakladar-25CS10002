@@ -4,6 +4,7 @@ import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
+import { sendOtpEmail } from "@/lib/email";
 
 type RecoveryEmailRequestBody = {
 	email: string;
@@ -34,7 +35,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		recoveryEmailToken,
 		"recoveryEmailToken"
 	);
-	// TODO: Send email
-	console.log(`The OTP is ${currentOTP} for email ${user.email}`);
+	sendOtpEmail(user.email, currentOTP, "reset password");
 	return apiResponse("Sent an OTP to your email.");
 });
