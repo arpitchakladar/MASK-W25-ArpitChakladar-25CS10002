@@ -53,7 +53,7 @@ export default function LogInPage() {
 			return setMessage({ text: "Invalid OTP.", type: "error" });
 
 		try {
-			const res = await fetch(`/api/login/otp`, {
+			const res = await fetch(`/api/otp/login`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ otp: otp.value }),

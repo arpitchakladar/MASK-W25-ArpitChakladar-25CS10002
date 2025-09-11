@@ -56,7 +56,7 @@ export default function SignUpPage() {
 			return setMessage({ text: "Invalid OTP.", type: "error" });
 
 		try {
-			const res = await fetch(`/api/signup/otp`, {
+			const res = await fetch(`/api/otp/signup`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ otp: otp.value }),

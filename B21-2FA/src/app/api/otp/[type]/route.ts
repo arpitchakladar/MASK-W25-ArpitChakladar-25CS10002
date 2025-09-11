@@ -5,7 +5,8 @@ import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 
 export const POST = withErrorHandler(
-	async (req: NextRequest, { params }: { params: { type: string } }) => {
+	async (req: NextRequest, context: { params: Promise<{ type: string }> }) => {
+		const params = await context.params;
 		if (params.type !== "login" && params.type !== "signup")
 			return apiResponse("Page not found.", 404);
 		const { otp: reqOTP } = await req.json();
