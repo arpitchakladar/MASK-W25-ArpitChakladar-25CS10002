@@ -55,6 +55,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	cookieStore.set("preAuthToken", encodeURIComponent(preAuthToken), {
 		path: "/",
 	});
+	cookieStore.delete("rememberDevice");
 
 	// Generate account validation OTP
 	const currentOTP = await otp.generateOTP(preAuthToken, "signup");

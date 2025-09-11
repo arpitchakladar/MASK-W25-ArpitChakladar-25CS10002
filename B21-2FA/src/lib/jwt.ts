@@ -1,9 +1,13 @@
 import { getHash } from "@/lib/hashing";
 
-export function createJWT(payload: Record<string, any>, secret: string) {
+export function createJWT(
+	payload: Record<string, any>,
+	secret: string,
+	expirationInMs = 1000 * 60 * 60 * 24 * 90
+) {
 	const payloadString = JSON.stringify({
 		...payload,
-		expiration: Date.now() + 1000 * 60 * 60 * 24 * 90,
+		expiration: Date.now() + expirationInMs,
 	});
 	const jwtToken = getHash(payloadString, secret);
 	return btoa(payloadString) + "$" + jwtToken;

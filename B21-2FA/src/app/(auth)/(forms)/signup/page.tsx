@@ -108,9 +108,7 @@ export default function SignUpPage() {
 						required
 					/>
 
-					<label
-						style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}
-					>
+					<label className="checkbox-label">
 						<input
 							type="checkbox"
 							checked={rememberDevice}
