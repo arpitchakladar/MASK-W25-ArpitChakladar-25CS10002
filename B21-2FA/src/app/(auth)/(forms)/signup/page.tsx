@@ -12,9 +12,11 @@ export default function SignUpPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [otp, setOtp] = useState({ value: "", visible: false });
+	const [rememberDevice, setRememberDevice] = useState(false);
 	const resizeForm = useResizeForm();
 	const router = useRouter();
 	const { setMessage } = useMessage();
+
 	useEffect(() => {
 		resizeForm();
 	}, [otp.visible]);
@@ -51,6 +53,7 @@ export default function SignUpPage() {
 
 		const { ok, data } = await apiRequest("/api/otp/signup", {
 			otp: otp.value,
+			rememberDevice, // ✅ send along with OTP
 		});
 		if (ok) {
 			setMessage({ text: data.message, type: "success" });
@@ -92,14 +95,30 @@ export default function SignUpPage() {
 				disabled={otp.visible}
 				required
 			/>
+
 			{otp.visible && (
-				<input
-					value={otp.value}
-					type="text"
-					placeholder="Enter OTP"
-					onChange={(e) => setOtp((otp) => ({ ...otp, value: e.target.value }))}
-					required
-				/>
+				<>
+					<input
+						value={otp.value}
+						type="text"
+						placeholder="Enter OTP"
+						onChange={(e) =>
+							setOtp((otp) => ({ ...otp, value: e.target.value }))
+						}
+						required
+					/>
+
+					<label
+						style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}
+					>
+						<input
+							type="checkbox"
+							checked={rememberDevice}
+							onChange={(e) => setRememberDevice(e.target.checked)}
+						/>
+						Remember this device for 30 days
+					</label>
+				</>
 			)}
 
 			<button type="submit">{otp.visible ? "Sign Up" : "Send OTP"}</button>

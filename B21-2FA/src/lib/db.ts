@@ -36,6 +36,7 @@ type Database = {
 	authTokenSecret: string;
 	recoveryEmailTokenSecret: string;
 	resetPasswordSecret: string;
+	rememberDeviceSecret: string;
 };
 
 export type OTPType = keyof Database["otps"];
@@ -50,6 +51,7 @@ const db = new Low<Database>(adapter, {
 	authTokenSecret: generateSalt(),
 	recoveryEmailTokenSecret: generateSalt(),
 	resetPasswordSecret: generateSalt(),
+	rememberDeviceSecret: generateSalt(),
 });
 
 async function initDb() {
@@ -61,6 +63,7 @@ async function initDb() {
 		authTokenSecret: generateSalt(),
 		recoveryEmailTokenSecret: generateSalt(),
 		resetPasswordSecret: generateSalt(),
+		rememberDeviceSecret: generateSalt(),
 	};
 	await db.write();
 }
@@ -72,17 +75,25 @@ export async function getPreAuthTokenSecret() {
 	await db.read();
 	return db.data!.preAuthTokenSecret;
 }
+
 export async function getAuthTokenSecret() {
 	await db.read();
 	return db.data!.authTokenSecret;
 }
+
 export async function getRecoveryEmailTokenSecret() {
 	await db.read();
 	return db.data!.recoveryEmailTokenSecret;
 }
+
 export async function getResetPasswordSecret() {
 	await db.read();
 	return db.data!.resetPasswordSecret;
+}
+
+export async function getRememberDeviceSecret() {
+	await db.read();
+	return db.data!.rememberDeviceSecret;
 }
 
 // ------------------ User CRUD ------------------

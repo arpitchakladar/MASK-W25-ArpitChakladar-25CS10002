@@ -6,6 +6,7 @@ import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import { sendOtpEmail } from "@/lib/email";
+import { skip } from "node:test";
 
 type LogInRequestBody = {
 	username: string;
@@ -27,6 +28,24 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Set preAuthToken jwt cookie
 	const cookieStore = await cookies();
+	if (cookieStore.get("rememberDevice")) {
+		try {
+			jwt.validateJWT(
+				decodeURIComponent(cookieStore.get("rememberDevice")?.value || ""),
+				await db.getRememberDeviceSecret()
+			);
+			const authToken = jwt.createJWT(
+				{ username },
+				await db.getAuthTokenSecret()
+			);
+			cookieStore.set("authToken", encodeURIComponent(authToken), {
+				path: "/",
+			});
+			return apiResponse("Logged in successfully.", 200, { skipOTP: true });
+		} catch (err: any) {
+			cookieStore.delete("rememberDevice");
+		}
+	}
 	const preAuthToken = jwt.createJWT(
 		{ username },
 		await db.getPreAuthTokenSecret()
@@ -38,5 +57,5 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Generate otp
 	const currentOTP = await otp.generateOTP(preAuthToken, "login");
 	sendOtpEmail(user.email, currentOTP, "login");
-	return apiResponse("Logged in successfully.");
+	return apiResponse("Logged in successfully.", 200, { skipOTP: false });
 });

@@ -10,7 +10,7 @@ export const POST = withErrorHandler(
 		const params = await context.params;
 		if (params.type !== "login" && params.type !== "signup")
 			return apiResponse("Page not found.", 404);
-		const { otp: reqOTP } = await req.json();
+		const { otp: reqOTP, rememberDevice } = await req.json();
 
 		// Read preAuthToken cookie
 		const cookieStore = await cookies();
@@ -62,6 +62,20 @@ export const POST = withErrorHandler(
 			await db.getAuthTokenSecret()
 		);
 		cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
+		console.log(rememberDevice);
+		if (rememberDevice) {
+			const rememberDeviceToken = jwt.createJWT(
+				{ username },
+				await db.getRememberDeviceSecret()
+			);
+			cookieStore.set(
+				"rememberDevice",
+				encodeURIComponent(rememberDeviceToken),
+				{
+					path: "/",
+				}
+			);
+		}
 		return apiResponse("Logged in successfully.", 200, data);
 	}
 );

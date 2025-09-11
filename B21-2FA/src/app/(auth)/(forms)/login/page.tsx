@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/apiHandler";
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [rememberDevice, setRememberDevice] = useState(false);
 	const [secondFactor, setSecondFactor] = useState<{
 		type: "otp" | "recovery";
 		value: string;
@@ -32,10 +33,14 @@ export default function LogInPage() {
 
 		const { ok, data } = await apiRequest("/api/login", { username, password });
 		if (ok) {
-			setSecondFactor((secondFactor) => ({
-				...secondFactor,
-				visible: true,
-			}));
+			if (data.skipOTP) {
+				setMessage({ text: data.message, type: "success" });
+				return router.push("/");
+			} else
+				return setSecondFactor((secondFactor) => ({
+					...secondFactor,
+					visible: true,
+				}));
 		} else {
 			setMessage({ text: data.message, type: "error" });
 		}
@@ -49,6 +54,7 @@ export default function LogInPage() {
 
 				const { ok, data } = await apiRequest("/api/otp/login", {
 					otp: secondFactor.value,
+					rememberDevice,
 				});
 				if (ok) {
 					setMessage({ text: data.message, type: "success" });
@@ -136,6 +142,17 @@ export default function LogInPage() {
 							? "Use recovery code instead"
 							: "Use OTP instead"}
 					</button>
+
+					<label
+						style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}
+					>
+						<input
+							type="checkbox"
+							checked={rememberDevice}
+							onChange={(e) => setRememberDevice(e.target.checked)}
+						/>
+						Remember this device for 30 days
+					</label>
 				</>
 			) : (
 				<div className={styles.forgotPassword}>
