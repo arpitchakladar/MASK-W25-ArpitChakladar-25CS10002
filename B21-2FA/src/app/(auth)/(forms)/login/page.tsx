@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import { useResizeForm } from "../../ResizeFormContext";
+import Link from "next/link";
+import styles from "./login.module.css";
 
 export default function LogInPage() {
 	const [username, setUsername] = useState("");
@@ -120,7 +122,7 @@ export default function LogInPage() {
 				required
 			/>
 
-			{secondFactor.visible && (
+			{secondFactor.visible ? (
 				<>
 					{secondFactor.type === "otp" ? (
 						<input
@@ -159,6 +161,10 @@ export default function LogInPage() {
 							: "Use OTP instead"}
 					</button>
 				</>
+			) : (
+				<div className={styles.forgotPassword}>
+					<Link href="/recovery-email">Forgot password?</Link>
+				</div>
 			)}
 
 			<button type="submit">

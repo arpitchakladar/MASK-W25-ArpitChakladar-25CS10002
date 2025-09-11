@@ -1,0 +1,4 @@
+.forgotPassword > a:hover {
+	background: transparent;
+	color: var(--accent);
+}
