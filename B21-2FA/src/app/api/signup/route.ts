@@ -34,7 +34,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const passwordHash = hashing.getHash(password, salt);
 	const recoveryCodes = generateRecoveryCodes();
 	// TODO: User creation should be done after otp validation
-	db.createUser({
+	await db.createUser({
 		username,
 		email,
 		password: passwordHash + "$" + salt,
@@ -58,7 +58,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Generate account validation OTP
 	const currentOTP = await otp.generateOTP(preAuthToken, "signup");
-	sendOtpEmail(email, currentOTP, "login");
+	sendOtpEmail(email, currentOTP, "signup");
 
 	return apiResponse("Signed up successfully.", 201);
 });

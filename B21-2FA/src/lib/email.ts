@@ -5,7 +5,6 @@ export async function sendOtpEmail(
 	otp: string,
 	type: "login" | "signup" | "reset password"
 ) {
-	console.log(process.env.GMAIL_USER, process.env.GMAIL_PASS);
 	const transporter = nodemailer.createTransport({
 		service: "gmail",
 		auth: {
