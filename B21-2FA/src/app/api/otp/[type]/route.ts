@@ -39,17 +39,20 @@ export const POST = withErrorHandler(
 		}
 
 		// Query db for otp and compare with user input
-		const otpEntry = await db.getOTPByType(params.type, preAuthToken);
-		if (!otpEntry || otpEntry.otp !== reqOTP)
+		const otpEntry = await db.getOTP({
+			type: params.type,
+			token: preAuthToken,
+		});
+		if (
+			!otpEntry ||
+			otpEntry.otp !== reqOTP ||
+			otpEntry.expiration < Date.now()
+		)
 			return apiResponse("Invalid OTP.", 401);
-		if (otpEntry.expiration < Date.now()) {
-			cookieStore.delete("preAuthToken");
-			return apiResponse("OTP timeout.", 401);
-		}
 
 		// Delete preAuthToken
 		cookieStore.delete("preAuthToken");
-		db.deleteOTPByType(params.type, preAuthToken);
+		db.deleteOTP({ type: params.type, token: preAuthToken });
 
 		const data: { recoveryCodes?: string[] } = {};
 
@@ -74,7 +77,6 @@ export const POST = withErrorHandler(
 			await db.getAuthTokenSecret()
 		);
 		cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
-		console.log(rememberDevice);
 		if (rememberDevice) {
 			const rememberDeviceToken = jwt.createJWT(
 				{ username },

@@ -58,7 +58,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	if (!match) return apiResponse("Invalid recovery token.", 401);
 
 	cookieStore.delete("preAuthToken");
-	db.deleteOTPByType("login", preAuthToken);
+	db.deleteOTP({ type: "login", token: preAuthToken });
 
 	const authToken = jwt.createJWT({ username }, await db.getAuthTokenSecret());
 	cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });

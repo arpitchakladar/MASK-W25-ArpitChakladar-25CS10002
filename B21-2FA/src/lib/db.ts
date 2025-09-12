@@ -1,10 +1,8 @@
-import { Low } from "lowdb";
-import { JSONFile } from "lowdb/node";
 import { generateSalt } from "@/lib/hashing";
+import { MongoClient } from "mongodb";
+import fs from "fs";
 
 // ------------------ Types ------------------
-
-const DB_FILE = "db.json";
 
 type RecoveryCodes = {
 	codes: string[];
@@ -19,174 +17,118 @@ type User = {
 	recoveryCodes: RecoveryCodes;
 };
 
+export type OTPType = "signup" | "login" | "recoveryEmailToken";
+
 type OTP = {
+	type: OTPType;
 	token: string;
 	otp: string;
 	expiration: number;
 };
 
-type Database = {
-	users: User[];
-	otps: {
-		signup: OTP[];
-		login: OTP[];
-		recoveryEmailToken: OTP[];
-	};
+// ------------------ DB Setup ------------------
+
+const dbPath = "./db";
+
+// Ensure directory exists
+if (!fs.existsSync(dbPath)) {
+	fs.mkdirSync(dbPath, { recursive: true });
+}
+
+const uri = process.env.MONGODB_URI!;
+
+const client = new MongoClient(uri);
+await client.connect();
+
+const db = client.db("B21-2FA");
+const usersCollection = db.collection<User>("users");
+const otpsCollection = db.collection<OTP>("otps");
+const secretsCollection = db.collection<{
 	preAuthTokenSecret: string;
 	authTokenSecret: string;
 	recoveryEmailTokenSecret: string;
 	resetPasswordSecret: string;
 	rememberDeviceSecret: string;
-};
+}>("secrets");
 
-export type OTPType = keyof Database["otps"];
-
-// ------------------ DB Setup ------------------
-
-const adapter = new JSONFile<Database>(DB_FILE);
-const db = new Low<Database>(adapter, {
-	users: [],
-	otps: { signup: [], login: [], recoveryEmailToken: [] },
-	preAuthTokenSecret: generateSalt(),
-	authTokenSecret: generateSalt(),
-	recoveryEmailTokenSecret: generateSalt(),
-	resetPasswordSecret: generateSalt(),
-	rememberDeviceSecret: generateSalt(),
-});
-
+// TODO: Use mongo collections instead of lowdb
 async function initDb() {
-	await db.read();
-	db.data ||= {
-		users: [],
-		otps: { signup: [], login: [], recoveryEmailToken: [] },
-		preAuthTokenSecret: generateSalt(),
-		authTokenSecret: generateSalt(),
-		recoveryEmailTokenSecret: generateSalt(),
-		resetPasswordSecret: generateSalt(),
-		rememberDeviceSecret: generateSalt(),
-	};
-	await db.write();
+	if ((await secretsCollection.countDocuments({})) === 0) {
+		await secretsCollection.insertOne({
+			preAuthTokenSecret: generateSalt(),
+			authTokenSecret: generateSalt(),
+			recoveryEmailTokenSecret: generateSalt(),
+			resetPasswordSecret: generateSalt(),
+			rememberDeviceSecret: generateSalt(),
+		});
+	}
 }
 await initDb();
 
 // ------------------ Secrets ------------------
 
 export async function getPreAuthTokenSecret() {
-	await db.read();
-	return db.data!.preAuthTokenSecret;
+	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
 }
 
 export async function getAuthTokenSecret() {
-	await db.read();
-	return db.data!.authTokenSecret;
+	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
 }
 
 export async function getRecoveryEmailTokenSecret() {
-	await db.read();
-	return db.data!.recoveryEmailTokenSecret;
+	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
 }
 
 export async function getResetPasswordSecret() {
-	await db.read();
-	return db.data!.resetPasswordSecret;
+	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
 }
 
 export async function getRememberDeviceSecret() {
-	await db.read();
-	return db.data!.rememberDeviceSecret;
+	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
 }
 
 // ------------------ User CRUD ------------------
 
+// TODO: Use mongo collections instead of lowdb
 export async function getUser(usernameOrEmail: string) {
-	await db.read();
-	return db.data!.users.find(
-		(user) =>
-			user.username === usernameOrEmail || user.email === usernameOrEmail
-	);
+	return await usersCollection.findOne({
+		$or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+	});
 }
 
 export async function createUser(user: User) {
-	await db.read();
-	const exists = db.data!.users.find(
-		(u) => u.username === user.username || u.email === user.email
-	);
-	if (exists) throw new Error("User already exists");
-	db.data!.users.push(user);
-	await db.write();
+	await usersCollection.insertOne(user);
 }
 
 export async function updateUser(username: string, updates: Partial<User>) {
-	await db.read();
-	const user = db.data!.users.find((u) => u.username === username);
-	if (!user) throw new Error("User not found");
-	Object.assign(user, updates);
-	await db.write();
-	return user;
+	if (
+		(await usersCollection.updateOne({ username }, { $set: updates }))
+			.modifiedCount === 0
+	)
+		throw new Error("User not found");
 }
 
 export async function deleteUser(username: string) {
-	await db.read();
-	const before = db.data!.users.length;
-	db.data!.users = db.data!.users.filter((u) => u.username !== username);
-	if (db.data!.users.length === before) throw new Error("User not found");
-	await db.write();
+	if ((await usersCollection.deleteOne({ username })).deletedCount === 0)
+		throw new Error("User not found");
 }
 
 // ------------------ OTP CRUD ------------------
 
-export async function getOTPsByType(type: OTPType) {
-	await db.read();
-	return db.data!.otps[type];
+// TODO: Use mongo collections instead of lowdb
+export async function getOTP(otp: Partial<OTP>) {
+	return await otpsCollection.findOne(otp);
 }
 
-export async function getOTPByType(type: OTPType, token: string) {
-	await db.read();
-	return db.data!.otps[type].find((o) => o.token === token);
+export async function createOTP(otp: OTP) {
+	await otpsCollection.insertOne(otp);
 }
 
-export async function createOTPByType(type: OTPType, otp: OTP) {
-	await db.read();
-	const exists = db.data!.otps[type].find((o) => o.token === otp.token);
-	if (exists) throw new Error(`OTP already exists for this token in ${type}`);
-	db.data!.otps[type].push(otp);
-	await db.write();
+export async function updateOTP(otp: Partial<OTP>, updates: Partial<OTP>) {
+	await otpsCollection.updateOne(otp, { $set: updates });
 }
 
-export async function updateOTPByType(
-	type: OTPType,
-	token: string,
-	updates: Partial<OTP>
-) {
-	await db.read();
-	const entry = db.data!.otps[type].find((o) => o.token === token);
-	if (!entry) throw new Error(`OTP not found in ${type}`);
-	Object.assign(entry, updates);
-	await db.write();
-	return entry;
+export async function deleteOTP(otp: Partial<OTP>) {
+	if ((await otpsCollection.deleteOne(otp)).deletedCount === 0)
+		throw new Error(`OTP not found.`);
 }
-
-export async function deleteOTPByType(type: OTPType, token: string) {
-	await db.read();
-	const before = db.data!.otps[type].length;
-	db.data!.otps[type] = db.data!.otps[type].filter((o) => o.token !== token);
-	if (db.data!.otps[type].length === before)
-		throw new Error(`OTP not found in ${type}`);
-	await db.write();
-}
-
-// ------------------ Cleanup ------------------
-
-// Remove expired OTPs every 30 minutes
-setInterval(async () => {
-	await db.read();
-	const curDate = Date.now();
-	for (const type of Object.keys(db.data!.otps) as OTPType[]) {
-		db.data!.otps[type] = db.data!.otps[type].filter(
-			(otp) => otp.expiration > curDate
-		);
-	}
-	await db.write();
-}, 1000 * 60 * 30);
-
-// TODO: Clean up unvalidated accounts

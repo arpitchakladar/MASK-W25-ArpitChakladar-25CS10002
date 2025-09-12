@@ -7,7 +7,8 @@ function generate6DigitNumber() {
 export async function generateOTP(token: string, type: db.OTPType) {
 	const otp = generate6DigitNumber();
 
-	await db.createOTPByType(type, {
+	await db.createOTP({
+		type,
 		token,
 		expiration: Date.now() + 1000 * 60 * 10, // 10 minutes
 		otp,
