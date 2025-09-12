@@ -41,7 +41,8 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const username = JSON.parse(atob(preAuthToken.split("$")[0])).username;
 	const user = await db.getUserFromUsernameOrEmail(username);
 
-	if (!user) throw Error("Using recovery code for a user that doesn't exist.");
+	if (!user || !user.validated || !user.recoveryCodes)
+		throw Error("Using recovery code for a user that doesn't exist.");
 
 	// Query db for recovery token and compare with user input
 	const recoveryCodeHashed = getHash(recoveryCode, user.recoveryCodes.salt);

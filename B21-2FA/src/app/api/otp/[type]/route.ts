@@ -5,6 +5,7 @@ import * as jwt from "@/lib/jwt";
 import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import { generateSalt, getHash } from "@/lib/hashing";
 import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
+import { generateRecoveryCodes } from "@/lib/recoveryCodes";
 
 export const POST = withErrorHandler(
 	async (req: NextRequest, context: { params: Promise<{ type: string }> }) => {
@@ -61,7 +62,8 @@ export const POST = withErrorHandler(
 		if (params.type === "signup") {
 			const user = await db.getUserFromUsernameOrEmail(username);
 			if (!user) throw Error("Unauthenticated.");
-			data.recoveryCodes = user.recoveryCodes.codes;
+			const recoveryCodes = generateRecoveryCodes();
+			data.recoveryCodes = recoveryCodes;
 			const salt = generateSalt();
 			await db.updateUser(
 				{ username },
@@ -69,7 +71,7 @@ export const POST = withErrorHandler(
 					validated: true,
 					recoveryCodes: {
 						salt: salt,
-						codes: user.recoveryCodes.codes.map((code) => getHash(code, salt)),
+						codes: recoveryCodes.map((code) => getHash(code, salt)),
 					},
 				},
 				{

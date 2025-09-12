@@ -15,7 +15,7 @@ type User = {
 	password: string;
 	validated: boolean;
 	signupExpiresAt?: Date;
-	recoveryCodes: RecoveryCodes;
+	recoveryCodes?: RecoveryCodes;
 };
 
 export type OTPType = "signup" | "login" | "recoveryEmailToken";

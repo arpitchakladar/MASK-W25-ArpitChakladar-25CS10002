@@ -6,7 +6,6 @@ import * as validation from "@/lib/form-validation";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
 import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { generateRecoveryCodes } from "@/lib/recoveryCodes";
 import { sendOtpEmail } from "@/lib/email";
 import {
 	emailLimiter,
@@ -50,18 +49,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Create user
 	const salt = hashing.generateSalt();
 	const passwordHash = hashing.getHash(password, salt);
-	const recoveryCodes = generateRecoveryCodes();
 	// TODO: User creation should be done after otp validation
 	await db.createUser({
 		username,
 		email,
 		password: passwordHash + "$" + salt,
 		validated: false,
-		// Here recovery codes are stored in plain text, until account is verified
-		recoveryCodes: {
-			codes: recoveryCodes,
-			salt: "",
-		},
 		signupExpiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
 	});
 
