@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMessage } from "@/app/MessageContext";
 import Form from "@/components/form/Form";
 import authStyles from "../auth.module.css";
-import { validatePassword } from "@/lib/form-validation";
+import * as formValidation from "@/lib/form-validation";
 import { apiRequest } from "@/lib/apiHandler";
 
 // Helper to handle API requests
@@ -52,7 +52,7 @@ export default function RecoveryEmailPage() {
 
 	const handleResetPassword = useCallback(async () => {
 		try {
-			validatePassword(password.value);
+			formValidation.validatePassword(password.value);
 		} catch (err: any) {
 			setMessage({ text: err.message, type: "error" });
 			return;

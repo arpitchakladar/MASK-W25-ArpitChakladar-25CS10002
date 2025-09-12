@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
-import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { sendOtpEmail } from "@/lib/email";
-import { getClientIp, ipLimiter, emailLimiter } from "@/lib/rateLimiter";
+import * as emailHandler from "@/lib/email";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type RecoveryEmailRequestBody = {
 	email: string;
@@ -14,11 +14,11 @@ type RecoveryEmailRequestBody = {
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { email } = (await req.json()) as RecoveryEmailRequestBody;
 
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 
 	try {
-		await ipLimiter.consume(ip);
-		await emailLimiter.consume(email);
+		await rateLimiter.ipLimiter.consume(ip);
+		await rateLimiter.emailLimiter.consume(email);
 	} catch {
 		return apiResponse(
 			"Too many account recovery attempts. Try again later.",
@@ -48,6 +48,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		recoveryEmailToken,
 		"recoveryEmailToken"
 	);
-	sendOtpEmail(user.email, currentOTP, "reset password");
+	emailHandler.sendOtpEmail(user.email, currentOTP, "reset password");
 	return apiResponse("Sent an OTP to your email.");
 });

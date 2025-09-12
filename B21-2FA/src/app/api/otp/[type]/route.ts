@@ -1,11 +1,16 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
-import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
-import { generateSalt, getHash } from "@/lib/hashing";
-import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
-import { generateRecoveryCodes } from "@/lib/recoveryCodes";
+import * as hashing from "@/lib/hashing";
+import * as rateLimiter from "@/lib/rateLimiter";
+import * as recoveryCodes from "@/lib/recoveryCodes";
+
+type OtpLogInSignUpRequestBody = {
+	otp: string;
+	rememberDevice: boolean;
+};
 
 export const POST = withErrorHandler(
 	async (req: NextRequest, context: { params: Promise<{ type: string }> }) => {
@@ -13,17 +18,18 @@ export const POST = withErrorHandler(
 		if (params.type !== "login" && params.type !== "signup")
 			return apiResponse("Page not found.", 404);
 
-		const ip = getClientIp(req);
+		const ip = rateLimiter.getClientIp(req);
 
 		try {
-			await ipLimiter.consume(ip);
+			await rateLimiter.ipLimiter.consume(ip);
 		} catch {
 			return apiResponse(
 				"Too many account recovery attempts. Try again later.",
 				429
 			);
 		}
-		const { otp: reqOTP, rememberDevice } = await req.json();
+		const { otp: reqOTP, rememberDevice } =
+			(await req.json()) as OtpLogInSignUpRequestBody;
 
 		// Read preAuthToken cookie
 		const cookieStore = await cookies();
@@ -62,20 +68,16 @@ export const POST = withErrorHandler(
 		if (params.type === "signup") {
 			const user = await db.getUserFromUsernameOrEmail(username);
 			if (!user) throw Error("Unauthenticated.");
-			const recoveryCodes = generateRecoveryCodes();
-			data.recoveryCodes = recoveryCodes;
-			const salt = generateSalt();
+			const userRecoveryCodes = recoveryCodes.generateRecoveryCodes();
+			data.recoveryCodes = userRecoveryCodes;
+			const salt = hashing.generateSalt();
 			await db.updateUser(
 				{ username },
 				{
-					validated: true,
 					recoveryCodes: {
 						salt: salt,
-						codes: recoveryCodes.map((code) => getHash(code, salt)),
+						codes: userRecoveryCodes.map((code) => hashing.getHash(code, salt)),
 					},
-				},
-				{
-					$unset: { signupExpiresAt: "" },
 				}
 			);
 		}

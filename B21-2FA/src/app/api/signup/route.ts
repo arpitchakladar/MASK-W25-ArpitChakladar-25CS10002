@@ -1,18 +1,13 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as hashing from "@/lib/hashing";
 import * as validation from "@/lib/form-validation";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
-import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { sendOtpEmail } from "@/lib/email";
-import {
-	emailLimiter,
-	getClientIp,
-	ipLimiter,
-	userLimiter,
-} from "@/lib/rateLimiter";
+import * as emailHandler from "@/lib/email";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type SignUpRequestBody = {
 	username: string;
@@ -22,12 +17,12 @@ type SignUpRequestBody = {
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { username, email, password } = (await req.json()) as SignUpRequestBody;
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 
 	try {
-		await ipLimiter.consume(ip);
-		await userLimiter.consume(username);
-		await emailLimiter.consume(email);
+		await rateLimiter.ipLimiter.consume(ip);
+		await rateLimiter.userLimiter.consume(username);
+		await rateLimiter.emailLimiter.consume(email);
 	} catch {
 		return apiResponse("Too many signup attempts. Try again later.", 429);
 	}
@@ -49,7 +44,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	// Create user
 	const salt = hashing.generateSalt();
 	const passwordHash = hashing.getHash(password, salt);
-	// TODO: User creation should be done after otp validation
 	await db.createUser({
 		username,
 		email,
@@ -71,7 +65,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Generate account validation OTP
 	const currentOTP = await otp.generateOTP(preAuthToken, "signup");
-	sendOtpEmail(email, currentOTP, "signup");
+	emailHandler.sendOtpEmail(email, currentOTP, "signup");
 
 	return apiResponse("Sent an OTP to your email.", 201);
 });

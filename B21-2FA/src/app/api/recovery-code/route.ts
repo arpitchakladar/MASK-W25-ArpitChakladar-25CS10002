@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
-import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
-import { getHash } from "@/lib/hashing";
-import { getClientIp, ipLimiter, emailLimiter } from "@/lib/rateLimiter";
+import * as hashing from "@/lib/hashing";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type RecoveryCodeRequestBody = {
 	recoveryCode: string;
@@ -15,10 +15,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { recoveryCode, rememberDevice } =
 		(await req.json()) as RecoveryCodeRequestBody;
 
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 
 	try {
-		await ipLimiter.consume(ip);
+		await rateLimiter.ipLimiter.consume(ip);
 	} catch {
 		return apiResponse(
 			"Too many account recovery attempts. Try again later.",
@@ -45,7 +45,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		throw Error("Using recovery code for a user that doesn't exist.");
 
 	// Query db for recovery token and compare with user input
-	const recoveryCodeHashed = getHash(recoveryCode, user.recoveryCodes.salt);
+	const recoveryCodeHashed = hashing.getHash(
+		recoveryCode,
+		user.recoveryCodes.salt
+	);
 	let match = false;
 	for (const code of user.recoveryCodes.codes) {
 		if (recoveryCodeHashed === code) {

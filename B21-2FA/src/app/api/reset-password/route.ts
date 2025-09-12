@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as hashing from "@/lib/hashing";
 import * as jwt from "@/lib/jwt";
-import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type ResetPasswordRequestBody = {
 	password: string;
@@ -13,9 +13,9 @@ type ResetPasswordRequestBody = {
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { password } = (await req.json()) as ResetPasswordRequestBody;
 
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 	try {
-		await ipLimiter.consume(ip);
+		await rateLimiter.ipLimiter.consume(ip);
 	} catch {
 		return apiResponse("Too password reset attempts. Try again later.", 429);
 	}

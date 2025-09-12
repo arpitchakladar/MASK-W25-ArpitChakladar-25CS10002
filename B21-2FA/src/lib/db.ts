@@ -1,5 +1,5 @@
-import { generateSalt } from "@/lib/hashing";
-import { Filter, MongoClient, UpdateFilter } from "mongodb";
+import * as hashing from "@/lib/hashing";
+import { MongoClient } from "mongodb";
 import fs from "fs";
 
 // ------------------ Types ------------------
@@ -71,11 +71,11 @@ await initDb();
 export async function generateSecrets() {
 	if ((await secretsCollection.countDocuments({})) === 0) {
 		await secretsCollection.insertOne({
-			preAuthTokenSecret: generateSalt(),
-			authTokenSecret: generateSalt(),
-			recoveryEmailTokenSecret: generateSalt(),
-			resetPasswordSecret: generateSalt(),
-			rememberDeviceSecret: generateSalt(),
+			preAuthTokenSecret: hashing.generateSalt(),
+			authTokenSecret: hashing.generateSalt(),
+			recoveryEmailTokenSecret: hashing.generateSalt(),
+			resetPasswordSecret: hashing.generateSalt(),
+			rememberDeviceSecret: hashing.generateSalt(),
 		});
 	}
 }
@@ -107,29 +107,44 @@ export async function getUserFromUsernameOrEmail(usernameOrEmail: string) {
 	});
 }
 
+export async function getUser(user: Partial<User>) {
+	return await usersCollection.findOne(user);
+}
+
 export async function createUser(user: User) {
 	await usersCollection.insertOne(user);
 }
 
-export async function updateUser(
-	user: Filter<User>,
-	updates: Partial<User>,
-	moreUpdates?: UpdateFilter<User>
-) {
+export async function updateUser(user: Partial<User>, updates: Partial<User>) {
 	if (
-		(await usersCollection.updateOne(user, { $set: updates, ...moreUpdates }))
-			.modifiedCount === 0
+		(await usersCollection.updateOne(user, { $set: updates })).modifiedCount ===
+		0
 	)
 		throw new Error("User not found");
 }
 
-export async function deleteUser(user: Filter<User>) {
+export async function updateAndValidateUser(
+	user: Partial<User>,
+	updates: Partial<User>
+) {
+	if (
+		(
+			await usersCollection.updateOne(user, {
+				$set: { validated: true, ...updates },
+				$unset: { signupExpiresAt: "" },
+			})
+		).modifiedCount === 0
+	)
+		throw new Error("User not found");
+}
+
+export async function deleteUser(user: Partial<User>) {
 	if ((await usersCollection.deleteOne(user)).deletedCount === 0)
 		throw new Error("User not found");
 }
 
 // ------------------ OTP CRUD ------------------
-export async function getOTP(otp: Filter<OTP>) {
+export async function getOTP(otp: Partial<OTP>) {
 	return await otpsCollection.findOne(otp);
 }
 
@@ -137,11 +152,11 @@ export async function createOTP(otp: OTP) {
 	await otpsCollection.insertOne(otp);
 }
 
-export async function updateOTP(otp: Filter<OTP>, updates: Partial<OTP>) {
+export async function updateOTP(otp: Partial<OTP>, updates: Partial<OTP>) {
 	await otpsCollection.updateOne(otp, { $set: updates });
 }
 
-export async function deleteOTP(otp: Filter<OTP>) {
+export async function deleteOTP(otp: Partial<OTP>) {
 	if ((await otpsCollection.deleteOne(otp)).deletedCount === 0)
 		throw new Error(`OTP not found.`);
 }

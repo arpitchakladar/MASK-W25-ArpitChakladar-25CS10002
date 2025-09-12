@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as hashing from "@/lib/hashing";
 import * as jwt from "@/lib/jwt";
 import * as otp from "@/lib/otp";
-import { apiResponse, withErrorHandler } from "@/lib/apiHandler";
-import { sendOtpEmail } from "@/lib/email";
-import { getClientIp, ipLimiter, userLimiter } from "@/lib/rateLimiter";
+import * as emailHandler from "@/lib/email";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type LogInRequestBody = {
 	username: string;
@@ -16,11 +16,11 @@ type LogInRequestBody = {
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { username, password } = (await req.json()) as LogInRequestBody;
 
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 
 	try {
-		await ipLimiter.consume(ip);
-		await userLimiter.consume(username);
+		await rateLimiter.ipLimiter.consume(ip);
+		await rateLimiter.userLimiter.consume(username);
 	} catch {
 		return apiResponse("Too many login attempts. Try again later.", 429);
 	}
@@ -65,6 +65,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	// Generate otp
 	const currentOTP = await otp.generateOTP(preAuthToken, "login");
-	sendOtpEmail(user.email, currentOTP, "login");
+	emailHandler.sendOtpEmail(user.email, currentOTP, "login");
 	return apiResponse("Sent an OTP to your email.", 200, { skipOTP: false });
 });

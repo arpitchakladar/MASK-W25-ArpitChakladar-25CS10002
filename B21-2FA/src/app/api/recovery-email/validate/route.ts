@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
 import * as db from "@/lib/db";
 import * as jwt from "@/lib/jwt";
-import { withErrorHandler, apiResponse } from "@/lib/apiHandler";
-import { getClientIp, ipLimiter } from "@/lib/rateLimiter";
+import * as rateLimiter from "@/lib/rateLimiter";
 
 type RecoveryEmailValidateRequestBody = {
 	otp: string;
@@ -12,10 +12,10 @@ type RecoveryEmailValidateRequestBody = {
 export const POST = withErrorHandler(async (req: NextRequest) => {
 	const { otp: reqOTP } =
 		(await req.json()) as RecoveryEmailValidateRequestBody;
-	const ip = getClientIp(req);
+	const ip = rateLimiter.getClientIp(req);
 
 	try {
-		await ipLimiter.consume(ip);
+		await rateLimiter.ipLimiter.consume(ip);
 	} catch {
 		return apiResponse(
 			"Too many account recovery attempts. Try again later.",
