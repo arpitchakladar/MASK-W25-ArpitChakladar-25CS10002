@@ -26,7 +26,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	// Query database for users
-	const user = await db.getUser(username);
+	const user = await db.getUserFromUsernameOrEmail(username);
 	if (!user || !user.validated)
 		return apiResponse("Username or password was incorrect.", 401);
 

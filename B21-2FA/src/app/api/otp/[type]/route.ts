@@ -46,7 +46,7 @@ export const POST = withErrorHandler(
 		if (
 			!otpEntry ||
 			otpEntry.otp !== reqOTP ||
-			otpEntry.expiration < Date.now()
+			otpEntry.expiration.getTime() < Date.now()
 		)
 			return apiResponse("Invalid OTP.", 401);
 
@@ -59,17 +59,23 @@ export const POST = withErrorHandler(
 		const username = JSON.parse(atob(preAuthToken.split("$")[0]))
 			.username as string;
 		if (params.type === "signup") {
-			const user = await db.getUser(username);
+			const user = await db.getUserFromUsernameOrEmail(username);
 			if (!user) throw Error("Unauthenticated.");
 			data.recoveryCodes = user.recoveryCodes.codes;
 			const salt = generateSalt();
-			await db.updateUser(username, {
-				validated: true,
-				recoveryCodes: {
-					salt: salt,
-					codes: user.recoveryCodes.codes.map((code) => getHash(code, salt)),
+			await db.updateUser(
+				{ username },
+				{
+					validated: true,
+					recoveryCodes: {
+						salt: salt,
+						codes: user.recoveryCodes.codes.map((code) => getHash(code, salt)),
+					},
 				},
-			});
+				{
+					$unset: { signupExpiresAt: "" },
+				}
+			);
 		}
 		// Create authToken token
 		const authToken = jwt.createJWT(

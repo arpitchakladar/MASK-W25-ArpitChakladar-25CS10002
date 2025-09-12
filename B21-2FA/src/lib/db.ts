@@ -1,5 +1,5 @@
 import { generateSalt } from "@/lib/hashing";
-import { MongoClient } from "mongodb";
+import { Filter, MongoClient, UpdateFilter } from "mongodb";
 import fs from "fs";
 
 // ------------------ Types ------------------
@@ -14,6 +14,7 @@ type User = {
 	email: string;
 	password: string;
 	validated: boolean;
+	signupExpiresAt?: Date;
 	recoveryCodes: RecoveryCodes;
 };
 
@@ -23,7 +24,7 @@ type OTP = {
 	type: OTPType;
 	token: string;
 	otp: string;
-	expiration: number;
+	expiration: Date;
 };
 
 // ------------------ DB Setup ------------------
@@ -51,8 +52,23 @@ const secretsCollection = db.collection<{
 	rememberDeviceSecret: string;
 }>("secrets");
 
-// TODO: Use mongo collections instead of lowdb
 async function initDb() {
+	await generateSecrets();
+	// Delete expired OTPs and unvalidated users after their signupExpiresAt
+	await otpsCollection.createIndex(
+		{ expiration: 1 },
+		{ expireAfterSeconds: 0 }
+	);
+	await usersCollection.createIndex(
+		{ signupExpiresAt: 1 },
+		{ expireAfterSeconds: 0 }
+	);
+}
+await initDb();
+
+// ------------------ Secrets ------------------
+
+export async function generateSecrets() {
 	if ((await secretsCollection.countDocuments({})) === 0) {
 		await secretsCollection.insertOne({
 			preAuthTokenSecret: generateSalt(),
@@ -63,9 +79,6 @@ async function initDb() {
 		});
 	}
 }
-await initDb();
-
-// ------------------ Secrets ------------------
 
 export async function getPreAuthTokenSecret() {
 	return (await secretsCollection.findOne({}))!.preAuthTokenSecret;
@@ -88,9 +101,7 @@ export async function getRememberDeviceSecret() {
 }
 
 // ------------------ User CRUD ------------------
-
-// TODO: Use mongo collections instead of lowdb
-export async function getUser(usernameOrEmail: string) {
+export async function getUserFromUsernameOrEmail(usernameOrEmail: string) {
 	return await usersCollection.findOne({
 		$or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
 	});
@@ -100,23 +111,25 @@ export async function createUser(user: User) {
 	await usersCollection.insertOne(user);
 }
 
-export async function updateUser(username: string, updates: Partial<User>) {
+export async function updateUser(
+	user: Filter<User>,
+	updates: Partial<User>,
+	moreUpdates?: UpdateFilter<User>
+) {
 	if (
-		(await usersCollection.updateOne({ username }, { $set: updates }))
+		(await usersCollection.updateOne(user, { $set: updates, ...moreUpdates }))
 			.modifiedCount === 0
 	)
 		throw new Error("User not found");
 }
 
-export async function deleteUser(username: string) {
-	if ((await usersCollection.deleteOne({ username })).deletedCount === 0)
+export async function deleteUser(user: Filter<User>) {
+	if ((await usersCollection.deleteOne(user)).deletedCount === 0)
 		throw new Error("User not found");
 }
 
 // ------------------ OTP CRUD ------------------
-
-// TODO: Use mongo collections instead of lowdb
-export async function getOTP(otp: Partial<OTP>) {
+export async function getOTP(otp: Filter<OTP>) {
 	return await otpsCollection.findOne(otp);
 }
 
@@ -124,11 +137,11 @@ export async function createOTP(otp: OTP) {
 	await otpsCollection.insertOne(otp);
 }
 
-export async function updateOTP(otp: Partial<OTP>, updates: Partial<OTP>) {
+export async function updateOTP(otp: Filter<OTP>, updates: Partial<OTP>) {
 	await otpsCollection.updateOne(otp, { $set: updates });
 }
 
-export async function deleteOTP(otp: Partial<OTP>) {
+export async function deleteOTP(otp: Filter<OTP>) {
 	if ((await otpsCollection.deleteOne(otp)).deletedCount === 0)
 		throw new Error(`OTP not found.`);
 }

@@ -2,17 +2,17 @@ import { NextRequest } from "next/server";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
 export const ipLimiter = new RateLimiterMemory({
-	points: 5,
+	points: 20,
 	duration: 15 * 60,
 });
 
 export const userLimiter = new RateLimiterMemory({
-	points: 5,
+	points: 20,
 	duration: 15 * 60,
 });
 
 export const emailLimiter = new RateLimiterMemory({
-	points: 5,
+	points: 20,
 	duration: 15 * 60,
 });
 

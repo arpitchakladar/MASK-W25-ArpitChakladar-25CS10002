@@ -27,7 +27,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	// Query database for users
-	const user = await db.getUser(email);
+	const user = await db.getUserFromUsernameOrEmail(email);
 	if (!user || !user.validated)
 		return apiResponse("Sent an OTP to your email.");
 

@@ -64,6 +64,7 @@ export default function LogInPage() {
 			} else {
 				const { ok, data } = await apiRequest("/api/recovery-code", {
 					recoveryCode: secondFactor.value,
+					rememberDevice,
 				});
 				if (ok) {
 					setMessage({ text: data.message, type: "success" });

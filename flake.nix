@@ -27,6 +27,7 @@
 					shellHook = ''
 			 			export MONGOMS_SYSTEM_BINARY=$(command -v mongod || echo "${pkgs.mongodb}/bin/mongod")
 						${pkgs.mongodb}/bin/mongod --dbpath ./B21-2FA/db --bind_ip 127.0.0.1 --port 27017 --quiet --logpath ./mongo.log --logappend &
+						export MONGODB_URI=mongodb://127.0.0.1:27017
 						echo "Started MongoDB Server at mongodb://127.0.0.1:27017"
 						echo "🚀 Web development environment ready!"
 						echo "Node.js: $(node --version)"

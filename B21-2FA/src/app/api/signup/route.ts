@@ -34,7 +34,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	// User already exists
-	if ((await db.getUser(username)) || (await db.getUser(email)))
+	if (
+		(await db.getUserFromUsernameOrEmail(username)) ||
+		(await db.getUserFromUsernameOrEmail(email))
+	)
 		return apiResponse("Username or email already exists.", 401);
 
 	// Validation
@@ -59,6 +62,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 			codes: recoveryCodes,
 			salt: "",
 		},
+		signupExpiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
 	});
 
 	// Issue pre-OTP token

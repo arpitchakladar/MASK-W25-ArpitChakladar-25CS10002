@@ -38,20 +38,23 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	// Query db for otp and compare with user input
-	const otpEntry = await db.getOTPByType(
-		"recoveryEmailToken",
-		recoveryEmailToken
-	);
+	const otpEntry = await db.getOTP({
+		type: "recoveryEmailToken",
+		token: recoveryEmailToken,
+	});
 	if (!otpEntry || otpEntry.otp !== reqOTP)
 		return apiResponse("Invalid OTP.", 401);
-	if (otpEntry.expiration < Date.now()) {
+	if (otpEntry.expiration.getTime() < Date.now()) {
 		cookieStore.delete("recoveryEmailToken");
 		return apiResponse("OTP timeout.", 401);
 	}
 
 	// Delete recoveryEmailToken
 	cookieStore.delete("recoveryEmailToken");
-	db.deleteOTPByType("recoveryEmailToken", recoveryEmailToken);
+	db.deleteOTP({
+		type: "recoveryEmailToken",
+		token: recoveryEmailToken,
+	});
 
 	const username = JSON.parse(atob(recoveryEmailToken.split("$")[0]))
 		.username as string;

@@ -36,9 +36,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 		.username as string;
 	const salt = hashing.generateSalt();
 	const passwordHash = hashing.getHash(password, salt);
-	await db.updateUser(username, {
-		password: passwordHash + "$" + salt,
-	});
+	await db.updateUser(
+		{ username },
+		{
+			password: passwordHash + "$" + salt,
+		}
+	);
 
 	return apiResponse("Password reset was successful.");
 });

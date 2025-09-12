@@ -8,10 +8,12 @@ import { getClientIp, ipLimiter, emailLimiter } from "@/lib/rateLimiter";
 
 type RecoveryCodeRequestBody = {
 	recoveryCode: string;
+	rememberDevice: boolean;
 };
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
-	const { recoveryCode } = (await req.json()) as RecoveryCodeRequestBody;
+	const { recoveryCode, rememberDevice } =
+		(await req.json()) as RecoveryCodeRequestBody;
 
 	const ip = getClientIp(req);
 
@@ -37,7 +39,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	}
 
 	const username = JSON.parse(atob(preAuthToken.split("$")[0])).username;
-	const user = await db.getUser(username);
+	const user = await db.getUserFromUsernameOrEmail(username);
 
 	if (!user) throw Error("Using recovery code for a user that doesn't exist.");
 
@@ -47,12 +49,15 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 	for (const code of user.recoveryCodes.codes) {
 		if (recoveryCodeHashed === code) {
 			match = true;
-			await db.updateUser(username, {
-				recoveryCodes: {
-					salt: user.recoveryCodes.salt,
-					codes: user.recoveryCodes.codes.filter((ccode) => ccode !== code),
-				},
-			});
+			await db.updateUser(
+				{ username },
+				{
+					recoveryCodes: {
+						salt: user.recoveryCodes.salt,
+						codes: user.recoveryCodes.codes.filter((ccode) => ccode !== code),
+					},
+				}
+			);
 		}
 	}
 	if (!match) return apiResponse("Invalid recovery token.", 401);
@@ -62,5 +67,14 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
 	const authToken = jwt.createJWT({ username }, await db.getAuthTokenSecret());
 	cookieStore.set("authToken", encodeURIComponent(authToken), { path: "/" });
+	if (rememberDevice) {
+		const rememberDeviceToken = jwt.createJWT(
+			{ username },
+			await db.getRememberDeviceSecret()
+		);
+		cookieStore.set("rememberDevice", encodeURIComponent(rememberDeviceToken), {
+			path: "/",
+		});
+	}
 	return apiResponse("Logged in successfully.");
 });

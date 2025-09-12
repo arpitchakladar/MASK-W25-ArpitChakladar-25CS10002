@@ -10,7 +10,7 @@ export async function generateOTP(token: string, type: db.OTPType) {
 	await db.createOTP({
 		type,
 		token,
-		expiration: Date.now() + 1000 * 60 * 10, // 10 minutes
+		expiration: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
 		otp,
 	});
 
