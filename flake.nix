@@ -26,7 +26,20 @@
 
 					shellHook = ''
 			 			export MONGOMS_SYSTEM_BINARY=$(command -v mongod || echo "${pkgs.mongodb}/bin/mongod")
-						${pkgs.mongodb}/bin/mongod --dbpath ./B21-2FA/db --bind_ip 127.0.0.1 --port 27017 --quiet --logpath ./mongo.log --logappend &
+						if pgrep -x "mongod" > /dev/null; then
+							echo "✅ MongoDB is already running."
+						else
+							echo "⚡ Starting MongoDB..."
+							mkdir -p ./mongodb
+							${pkgs.mongodb}/bin/mongod --dbpath ./mongodb \
+									--bind_ip 127.0.0.1 \
+									--port 27017 \
+									--quiet \
+									--logpath ./mongo.log \
+									--logappend &
+							sleep 2
+							echo "✅ MongoDB started at mongodb://127.0.0.1:27017"
+						fi
 						export MONGODB_URI=mongodb://127.0.0.1:27017
 						echo "Started MongoDB Server at mongodb://127.0.0.1:27017"
 						echo "🚀 Web development environment ready!"

@@ -74,6 +74,7 @@ export const POST = withErrorHandler(
 			await db.updateUser(
 				{ username },
 				{
+					validated: true,
 					recoveryCodes: {
 						salt: salt,
 						codes: userRecoveryCodes.map((code) => hashing.getHash(code, salt)),
